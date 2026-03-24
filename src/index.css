@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 37 100% 97%;
+    --foreground: 211 75% 12%;
+
+    --card: 37 100% 97%;
+    --card-foreground: 211 75% 12%;
+
+    --popover: 37 100% 97%;
+    --popover-foreground: 211 75% 12%;
+
+    --primary: 35 88% 59%;
+    --primary-foreground: 37 100% 97%;
+
+    --secondary: 39 90% 84%;
+    --secondary-foreground: 211 75% 12%;
+
+    --muted: 36 30% 90%;
+    --muted-foreground: 211 30% 40%;
+
+    --accent: 14 83% 54%;
+    --accent-foreground: 37 100% 97%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 36 30% 85%;
+    --input: 36 30% 85%;
+    --ring: 35 88% 59%;
+
+    --radius: 0.75rem;
+
+    --olive: 86 18% 43%;
+    --olive-foreground: 37 100% 97%;
+
+    --navy: 211 75% 12%;
+
+    --sidebar-background: 37 100% 97%;
+    --sidebar-foreground: 211 75% 12%;
+    --sidebar-primary: 35 88% 59%;
+    --sidebar-primary-foreground: 37 100% 97%;
+    --sidebar-accent: 39 90% 84%;
+    --sidebar-accent-foreground: 211 75% 12%;
+    --sidebar-border: 36 30% 85%;
+    --sidebar-ring: 35 88% 59%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+  }
+}
+
+@layer components {
+  .slide-headline {
+    @apply text-foreground leading-[1.1] tracking-tight;
+    font-size: clamp(2.75rem, 6vw, 5.5rem);
+  }
+
+  .slide-subheadline {
+    @apply text-foreground leading-[1.2] tracking-tight;
+    font-size: clamp(2rem, 4vw, 3.25rem);
+  }
+
+  .slide-body {
+    @apply text-muted-foreground leading-relaxed;
+    font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+  }
+
+  .slide-label {
+    @apply uppercase tracking-[0.2em] text-muted-foreground font-medium;
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(0.75rem, 1.1vw, 0.875rem);
+  }
+
+  .slide-enter {
+    animation: slideEnter 0.4s ease-out forwards;
+  }
+
+  .slide-exit {
+    animation: slideExit 0.3s ease-out forwards;
+  }
+
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+
+  .tab-button {
+    @apply py-3 text-base font-medium transition-all duration-200 rounded-full text-center min-w-[160px];
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .tab-button-active {
+    @apply bg-foreground text-background;
+    box-shadow: 0 4px 14px -2px hsl(var(--foreground) / 0.35);
+  }
+
+  .tab-button-inactive {
+    @apply bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted;
+  }
+
+  .feature-item {
+    @apply flex items-start gap-3 py-2;
+  }
+
+  .feature-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-primary mt-3 shrink-0;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes slideEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Print styles for PDF export */
+@media print {
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+  }
+
+  /* Hide interactive UI */
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Show the print container */
+  .print-slides {
+    display: block !important;
+    position: static !important;
+  }
+
+  .print-slide-page {
+    width: 100vw;
+    height: 100vh;
+    page-break-after: always;
+    page-break-inside: avoid;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: hsl(37, 100%, 97%);
+  }
+
+  .print-slide-page:last-child {
+    page-break-after: auto;
+  }
+
+  /* Force all motion elements to be visible */
+  .print-slide-page [style*="opacity"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+}

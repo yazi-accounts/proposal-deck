@@ -1,0 +1,4 @@
+project_id = "imjdyaznwiccwvymsmyu"
+
+[functions.trigger-yazi]
+verify_jwt = false
