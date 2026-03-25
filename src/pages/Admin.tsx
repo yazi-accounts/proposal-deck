@@ -565,52 +565,45 @@ const Admin = () => {
       const token = import.meta.env.VITE_GITHUB_TOKEN;
       const owner = "yazi-accounts";
       const repo = "proposal-deck";
-      const branch = generated.branchName;
+      const slug = generated.branchName;
       const api = `https://api.github.com/repos/${owner}/${repo}`;
-      const headers = { Authorization: `token ${token}`, "Content-Type": "application/json" };
+      const headers: Record<string, string> = { Authorization: `token ${token}`, "Content-Type": "application/json" };
 
-      // 1. Get main branch SHA
-      const mainRef = await fetch(`${api}/git/ref/heads/main`, { headers }).then(r => r.json());
-      const mainSha = mainRef.object.sha;
-
-      // 2. Create branch (or reset if exists)
-      try {
-        await fetch(`${api}/git/refs`, {
-          method: "POST", headers,
-          body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: mainSha }),
-        });
-      } catch {
-        // Branch may already exist — update it
-        await fetch(`${api}/git/refs/heads/${branch}`, {
-          method: "PATCH", headers,
-          body: JSON.stringify({ sha: mainSha, force: true }),
-        });
-      }
-
-      // 3. Generate the standalone HTML deck
+      // 1. Generate the standalone HTML deck
       const htmlContent = generateStandaloneHTML(generated, form, logoPreview);
-
-      // 4. Push the HTML file to the branch
       const encodedContent = btoa(unescape(encodeURIComponent(htmlContent)));
-      await fetch(`${api}/contents/index.html`, {
+
+      // 2. Check if the file already exists (to get its sha for update)
+      const filePath = `public/decks/${slug}.html`;
+      let existingSha: string | undefined;
+      try {
+        const existing = await fetch(`${api}/contents/${filePath}?ref=main`, { headers });
+        if (existing.ok) {
+          const data = await existing.json();
+          existingSha = data.sha;
+        }
+      } catch { /* file doesn't exist yet — that's fine */ }
+
+      // 3. Push the HTML file to main branch in public/decks/ folder
+      const putBody: Record<string, string> = {
+        message: `Add personalized deck for ${form.brandName || form.companyName}`,
+        content: encodedContent,
+        branch: "main",
+      };
+      if (existingSha) putBody.sha = existingSha;
+
+      const pushResult = await fetch(`${api}/contents/${filePath}`, {
         method: "PUT", headers,
-        body: JSON.stringify({
-          message: `Generate personalized deck for ${form.brandName || form.companyName}`,
-          content: encodedContent,
-          branch,
-        }),
+        body: JSON.stringify(putBody),
       });
 
-      // 5. Also push a vercel.json for clean URLs
-      const vercelConfig = btoa(JSON.stringify({ rewrites: [{ source: "/(.*)", destination: "/index.html" }] }, null, 2));
-      try {
-        await fetch(`${api}/contents/vercel.json`, {
-          method: "PUT", headers,
-          body: JSON.stringify({ message: "Add vercel config", content: vercelConfig, branch }),
-        });
-      } catch { /* may already exist */ }
+      if (!pushResult.ok) {
+        const err = await pushResult.json();
+        throw new Error(err.message || `GitHub API error: ${pushResult.status}`);
+      }
 
-      const previewUrl = `https://proposal-deck-git-${branch}-wihan-jouberts-projects.vercel.app`;
+      // The deck will be available at /decks/[slug].html after Vercel redeploys
+      const previewUrl = `https://proposal-deck.vercel.app/decks/${slug}.html`;
       setDeployUrl(previewUrl);
     } catch (err: any) {
       console.error("Deploy failed:", err);
