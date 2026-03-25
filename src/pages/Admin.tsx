@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Building2, Upload, Sparkles, GitBranch, ExternalLink, Loader2, Check,
   ChevronDown, FileText, MessageSquare, BarChart3, Zap, Shield, Users,
@@ -252,6 +252,20 @@ function Tag({ label, color }: { label: string; color?: string }) {
 
 /* ─── MAIN COMPONENT ─── */
 const Admin = () => {
+  // Override the deck's overflow:hidden on html/body so admin page scrolls
+  useEffect(() => {
+    document.documentElement.style.overflow = "auto";
+    document.documentElement.style.height = "auto";
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.height = "";
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+    };
+  }, []);
+
   const [step, setStep] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -440,7 +454,7 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-background" style={{ fontFamily: "'DM Sans', sans-serif", overflow: "auto", height: "auto" }}>
       {/* Header */}
       <header className="border-b border-border bg-white/60 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
