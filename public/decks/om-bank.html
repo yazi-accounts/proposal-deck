@@ -1,904 +1,1335 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yazi × OM Bank</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-/* ═══════════ DESIGN TOKENS ═══════════ */
-:root {
-  --bg: hsl(37, 100%, 97%);
-  --fg: hsl(211, 75%, 15%);
-  --primary: hsl(35, 88%, 59%);
-  --olive: hsl(86, 18%, 43%);
-  --muted: hsl(36, 30%, 90%);
-  --muted-fg: hsl(211, 30%, 40%);
-  --border: hsl(36, 30%, 85%);
-  --accent: hsl(14, 83%, 54%);
-  --card: hsl(0, 0%, 100%);
-  --radius: 16px;
-  --om-green: #1A6B3C;
-  --whatsapp: #075E54;
-  --whatsapp-light: #25D366;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Old Mutual Yazi Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='64' height='64' rx='14' fill='%23009677'/%3E%3Ctext x='32' y='34' text-anchor='middle' font-size='18' font-weight='700' fill='white' font-family='-apple-system,BlinkMacSystemFont,sans-serif' letter-spacing='1'%3EOM%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
 
-html, body {
-  overflow: hidden;
-  height: 100%;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
+            color: #1A1D1F;
+            background: #F4F6F5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-h1, h2, h3, h4 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-}
+        #root {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-/* ═══════════ SLIDES CONTAINER ═══════════ */
-.deck {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+        .sidebar {
+            width: 240px;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
 
-.slide {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  pointer-events: none;
-  padding: 2rem;
-}
+        .sidebar-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 0;
+        }
 
-.slide.active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-  z-index: 10;
-}
+        .sidebar-logo img {
+            width: 180px;
+            height: auto;
+        }
 
-.slide.exit-up {
-  opacity: 0;
-  transform: translateY(-30px);
-}
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #AEAEB2;
+            margin-bottom: 28px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+        }
 
-/* ═══════════ STAGGER ANIMATION ═══════════ */
-.slide.active .stagger { animation: fadeUp 0.5s cubic-bezier(0.25,0.46,0.45,0.94) both; }
-.slide.active .stagger:nth-child(1) { animation-delay: 0.08s; }
-.slide.active .stagger:nth-child(2) { animation-delay: 0.16s; }
-.slide.active .stagger:nth-child(3) { animation-delay: 0.24s; }
-.slide.active .stagger:nth-child(4) { animation-delay: 0.32s; }
-.slide.active .stagger:nth-child(5) { animation-delay: 0.40s; }
-.slide.active .stagger:nth-child(6) { animation-delay: 0.48s; }
-.slide.active .stagger:nth-child(7) { animation-delay: 0.56s; }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            margin-bottom: 24px;
+        }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
 
-/* ═══════════ TYPOGRAPHY ═══════════ */
-.label {
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: clamp(0.7rem, 1vw, 0.85rem);
-  font-weight: 600;
-  color: var(--muted-fg);
-  font-family: 'DM Sans', sans-serif;
-}
+        .nav-item:hover {
+            background: rgba(0, 150, 119, 0.04);
+        }
 
-.headline {
-  font-size: clamp(2.5rem, 5.5vw, 5rem);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  color: var(--fg);
-}
+        .nav-item.active {
+            background: rgba(0, 150, 119, 0.08);
+            color: #009677;
+            font-weight: 600;
+        }
 
-.subheadline {
-  font-size: clamp(1.8rem, 3.8vw, 3rem);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--fg);
-}
+        .sidebar-footer {
+            font-size: 11px;
+            color: #AEAEB2;
+            text-align: center;
+            font-weight: 400;
+        }
 
-.body-text {
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
-  line-height: 1.6;
-  color: var(--muted-fg);
-  max-width: 560px;
-}
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-/* ═══════════ CARDS ═══════════ */
-.card {
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.35rem;
-  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-}
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px -8px rgba(0,0,0,0.1);
-  border-color: hsl(36, 30%, 75%);
-}
+        .header {
+            padding: 28px 40px 16px 40px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            background: #FFFFFF;
+        }
 
-.card-icon {
-  width: 42px; height: 42px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem;
-  margin-bottom: 0.75rem;
-}
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+            transition: opacity 0.3s ease;
+        }
 
-.card-title {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--fg);
-  margin-bottom: 0.3rem;
-  line-height: 1.3;
-}
+        .header-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: #86868B;
+            transition: opacity 0.3s ease;
+        }
 
-.card-desc {
-  font-size: 0.75rem;
-  line-height: 1.55;
-  color: var(--muted-fg);
-  margin-bottom: 0.6rem;
-}
+        .header-title.switching,
+        .header-subtitle.switching {
+            opacity: 0;
+        }
 
-.tag {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border-radius: 100px;
-  font-size: 0.65rem;
-  font-weight: 600;
-}
+        .content {
+            flex: 1;
+            padding: 20px 40px 24px 40px;
+            overflow: hidden;
+            background: #F4F6F5;
+        }
 
-/* ═══════════ NAVIGATION ═══════════ */
-.nav-pill {
-  position: fixed; top: 20px; right: 20px; z-index: 100;
-  display: flex; align-items: center; gap: 8px;
-  background: hsla(37,100%,97%,0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 6px 16px;
-  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.1);
-  font-family: 'DM Sans', sans-serif;
-}
-.nav-pill .bar { width: 3px; height: 18px; border-radius: 3px; background: var(--olive); }
-.nav-pill .counter { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-fg); }
-.nav-pill .slide-name { font-size: 0.85rem; font-weight: 500; color: var(--fg); }
+        .tab-content {
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
 
-.progress {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100;
-  display: flex; align-items: center; gap: 10px;
-  background: hsla(37,100%,97%,0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 8px 14px;
-  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.08);
-}
-.progress button { background: none; border: none; cursor: pointer; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--fg); transition: background 0.2s; }
-.progress button:hover { background: var(--muted); }
-.progress button:disabled { opacity: 0.2; pointer-events: none; }
-.dot { width: 6px; height: 6px; border-radius: 100px; background: hsla(211,75%,15%,0.15); transition: all 0.3s; cursor: pointer; border: none; padding: 0; }
-.dot.active { width: 20px; background: var(--fg); }
+        .tab-content.active {
+            display: flex;
+            animation: tabEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
 
-.demo-btn {
-  position: fixed; top: 20px; left: 20px; z-index: 100;
-  display: flex; align-items: center; gap: 6px;
-  background: hsla(37,100%,97%,0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 8px 16px;
-  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.1);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--fg);
-  cursor: pointer;
-  transition: background 0.2s;
-  text-decoration: none;
-}
-.demo-btn:hover { background: var(--muted); }
-.demo-btn svg { color: var(--primary); }
+        .tab-content > * {
+            width: 100%;
+        }
 
-/* ═══════════ GRID LAYOUTS ═══════════ */
-.grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  width: 100%;
-  max-width: 1050px;
-}
+        @keyframes tabEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.99);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
 
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  width: 100%;
-  max-width: 950px;
-}
+        .tab-content.active .card,
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card {
+            animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
 
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  width: 100%;
-  height: 100%;
-}
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+        .tab-content.active .col-right > .card:nth-child(1),
+        .tab-content.active .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .tab-content.active .col-right > .card:nth-child(2),
+        .tab-content.active .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+        .tab-content.active .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+        .tab-content.active .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+        .tab-content.active .kpi-card:nth-child(6) { animation-delay: 0.3s; }
 
-/* ═══════════ SECTION DOT ═══════════ */
-.section-dot {
-  width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle;
-}
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-/* ═══════════ FLOW DIAGRAM (Slide 3) ═══════════ */
-.flow-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  max-width: 700px;
-  width: 100%;
-}
+        .tab-content.active .bar-fill {
+            animation: barGrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
 
-.flow-card {
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  max-width: 620px;
-  position: relative;
-  transition: box-shadow 0.3s;
-}
-.flow-card:hover { box-shadow: 0 8px 24px -6px rgba(0,0,0,0.08); }
+        @keyframes barGrow {
+            from { max-width: 0; }
+            to { max-width: 100%; }
+        }
 
-.flow-card.trigger { border-color: hsl(0, 50%, 82%); background: hsl(0, 60%, 98%); }
-.flow-card.whatsapp { border-color: hsl(86, 30%, 75%); background: hsl(86, 40%, 97%); }
-.flow-card.data { border-color: var(--border); background: hsl(37, 50%, 96%); }
-.flow-card.output-dash { border-color: hsl(211, 40%, 80%); background: hsl(211, 50%, 97%); }
-.flow-card.output-alert { border-color: hsl(30, 60%, 80%); background: hsl(37, 60%, 96%); }
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
 
-.flow-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; flex-shrink: 0;
-}
+        .card-header {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: #86868B;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
 
-.flow-card-text h4 { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; color: var(--fg); }
-.flow-card-text p { font-size: 0.78rem; color: var(--muted-fg); margin-top: 2px; }
+        .two-column {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 20px;
+            height: 100%;
+            width: 100%;
+        }
 
-.flow-badge {
-  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-  padding: 0.2rem 0.65rem; border-radius: 100px; font-size: 0.68rem; font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-}
+        .col-left {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
 
-.flow-connector {
-  width: 2px; height: 28px; background: var(--border); position: relative;
-}
-.flow-connector::after {
-  content: ''; position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--border);
-}
+        .col-left.card {
+            height: 100%;
+        }
 
-.flow-branch {
-  display: flex; gap: 1rem; width: 100%; max-width: 620px; justify-content: center;
-}
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
 
-.flow-branch-card {
-  flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
-  padding: 1rem; text-align: center; transition: box-shadow 0.3s;
-}
-.flow-branch-card:hover { box-shadow: 0 8px 24px -6px rgba(0,0,0,0.08); }
+        .col-right > .card {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
 
-.flow-branch-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 0.5rem; font-size: 1rem;
-  background: hsl(240, 30%, 95%);
-}
+        .overview-wrapper {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(145deg, rgba(0, 150, 119, 0.04) 0%, rgba(0, 150, 119, 0.07) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.flow-branch-card h4 { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.85rem; color: var(--fg); }
-.flow-branch-card p { font-size: 0.72rem; color: var(--muted-fg); margin-top: 3px; }
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 900px;
+            width: 100%;
+        }
 
-.flow-split {
-  display: flex; align-items: flex-start; justify-content: center; gap: 0; height: 32px; position: relative; width: 100%; max-width: 620px;
-}
-.flow-split::before {
-  content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 12px; background: var(--border); transform: translateX(-50%);
-}
-.flow-split::after {
-  content: ''; position: absolute; top: 12px; left: calc(16.67% + 8px); right: calc(16.67% + 8px); height: 2px; background: var(--border);
-}
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1.5px solid #009677;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
 
-.flow-split-leg {
-  position: absolute; top: 12px; width: 2px; height: 20px; background: var(--border);
-}
-.flow-split-leg::after {
-  content: ''; position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 4px solid var(--border);
-}
+        .kpi-value {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #009677;
+            margin-bottom: 12px;
+        }
 
-.flow-merge {
-  display: flex; align-items: flex-start; justify-content: center; height: 28px; position: relative; width: 100%; max-width: 620px;
-}
-.flow-merge::before {
-  content: ''; position: absolute; top: 0; left: calc(16.67% + 8px); right: calc(16.67% + 8px); height: 2px; background: var(--border);
-}
-.flow-merge::after {
-  content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 24px; background: var(--border); transform: translateX(-50%);
-}
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #009677;
+            margin-bottom: 4px;
+        }
 
-.flow-merge-arrow {
-  position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--border);
-}
+        .kpi-subtext {
+            font-size: 11px;
+            font-weight: 400;
+            color: #AEAEB2;
+        }
 
-/* ═══════════ COMPETITOR CARDS ═══════════ */
-.comp-card {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-.comp-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px -8px rgba(0,0,0,0.1); }
-.comp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
 
-.comp-card.capitec::before { background: hsl(211, 60%, 50%); }
-.comp-card.tyme::before { background: hsl(280, 50%, 55%); }
-.comp-card.discovery::before { background: hsl(350, 60%, 50%); }
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.comp-name { font-family: 'Instrument Serif', serif; font-size: 1.3rem; color: var(--fg); margin-bottom: 0.15rem; }
-.comp-stat { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.75rem; }
-.comp-desc { font-size: 0.78rem; color: var(--muted-fg); line-height: 1.6; margin-bottom: 0.75rem; }
-.comp-divider { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
-.comp-doing-label { font-size: 0.75rem; font-weight: 600; color: var(--fg); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 5px; }
-.comp-doing { font-size: 0.75rem; color: var(--muted-fg); line-height: 1.55; }
+        .bar-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
 
-/* Warning banner */
-.warning-banner {
-  display: flex; align-items: center; gap: 12px;
-  background: hsl(40, 90%, 95%);
-  border: 1px solid hsl(40, 70%, 82%);
-  border-radius: 12px;
-  padding: 0.85rem 1.25rem;
-  max-width: 720px; width: 100%;
-}
-.warning-banner svg { flex-shrink: 0; }
-.warning-banner p { font-size: 0.82rem; color: var(--fg); line-height: 1.5; }
+        .bar-label-wide {
+            min-width: 160px;
+        }
 
-/* CTA bar */
-.cta-bar {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--fg);
-  border-radius: 14px;
-  padding: 1rem 1.5rem;
-  max-width: 680px; width: 100%;
-}
-.cta-bar svg { flex-shrink: 0; color: var(--primary); }
-.cta-bar p { font-size: 0.85rem; color: var(--bg); font-weight: 500; line-height: 1.5; }
+        .bar-container {
+            flex: 1;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 6px;
+            overflow: hidden;
+        }
 
-/* ═══════════ DASHBOARD (Slide 5) ═══════════ */
-.dash-container {
-  width: 100%; max-width: 1000px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 16px 48px -12px rgba(0,0,0,0.08);
-}
+        .bar-fill {
+            height: 100%;
+            background: #009677;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
 
-.dash-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.65rem 1.25rem;
-  background: var(--om-green);
-}
-.dash-header-left { display: flex; align-items: center; gap: 8px; }
-.dash-header-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); }
-.dash-header span { color: #fff; font-size: 0.82rem; font-weight: 600; }
-.dash-live { display: flex; align-items: center; gap: 5px; }
-.dash-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #66BB6A; animation: pulse 2s infinite; }
-.dash-live span { color: #A5D6A7; font-size: 0.75rem; font-weight: 500; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .bar-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFFFFF;
+            white-space: nowrap;
+        }
 
-.kpi-row {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; padding: 0.85rem 1rem;
-}
-.kpi-card {
-  background: var(--bg); border-radius: 12px; padding: 0.75rem 0.85rem;
-}
-.kpi-label { font-size: 0.65rem; color: var(--muted-fg); font-weight: 500; display: flex; align-items: center; gap: 4px; margin-bottom: 0.25rem; }
-.kpi-value { font-family: 'DM Sans', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--fg); line-height: 1.1; }
-.kpi-delta { font-size: 0.68rem; font-weight: 600; color: var(--om-green); margin-top: 0.2rem; }
+        .bar-value-right {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1A1D1F;
+            min-width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
 
-.dash-body {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 0 1rem 1rem;
-}
+        .bar-container-secondary {
+            height: 20px;
+        }
 
-.dash-panel {
-  background: var(--bg); border-radius: 12px; padding: 0.85rem;
-}
-.dash-panel-title { font-size: 0.78rem; font-weight: 600; color: var(--fg); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 6px; }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+        }
 
-.sentiment-row { display: flex; align-items: center; gap: 8px; margin-bottom: 0.45rem; }
-.sentiment-label { font-size: 0.7rem; color: var(--muted-fg); width: 50px; flex-shrink: 0; }
-.sentiment-track { flex: 1; height: 9px; background: hsl(36,20%,92%); border-radius: 100px; overflow: hidden; }
-.sentiment-fill { height: 100%; border-radius: 100px; transition: width 0.8s ease; }
-.sentiment-pct { font-size: 0.72rem; font-weight: 700; color: var(--fg); width: 32px; text-align: right; flex-shrink: 0; }
+        .stat-row:last-child {
+            border-bottom: none;
+        }
 
-.issue-row { display: flex; align-items: center; gap: 8px; margin-bottom: 0.35rem; }
-.issue-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.issue-name { font-size: 0.72rem; font-weight: 500; color: var(--fg); flex: 1; }
-.issue-count { font-size: 0.68rem; color: var(--muted-fg); }
-.issue-sev { font-size: 0.68rem; font-weight: 700; width: 50px; text-align: right; }
+        .stat-label {
+            color: #86868B;
+            font-weight: 500;
+        }
 
-/* Chart placeholder */
-.chart-area { position: relative; height: 130px; margin-top: 0.3rem; }
-.chart-area svg { width: 100%; height: 100%; }
+        .stat-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
 
-/* Question pills */
-.q-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; max-width: 1000px; }
-.q-pill { padding: 0.3rem 0.8rem; border-radius: 100px; font-size: 0.68rem; background: hsla(36,30%,90%,0.5); color: var(--muted-fg); border: 1px solid hsla(36,30%,85%,0.4); }
+        .list-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-/* ═══════════ SCROLL HINT ═══════════ */
-.scroll-hint {
-  position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-}
-.scroll-hint p { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 500; color: var(--muted-fg); animation: hintPulse 2.5s infinite ease-in-out; }
-.scroll-mouse { width: 20px; height: 32px; border-radius: 100px; border: 2px solid var(--muted-fg); position: relative; opacity: 0.4; animation: hintBounce 1.8s infinite ease-in-out; }
-.scroll-mouse::after { content: ''; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 3px; height: 6px; border-radius: 3px; background: var(--muted-fg); animation: scrollDot 1.8s infinite ease-in-out; }
-@keyframes hintPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
-@keyframes hintBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
-@keyframes scrollDot { 0%,100% { transform: translateX(-50%) translateY(0); opacity: 1; } 50% { transform: translateX(-50%) translateY(6px); opacity: 0.3; } }
+        .list-item:last-child {
+            border-bottom: none;
+        }
 
-/* ═══════════ RESPONSIVE ═══════════ */
-@media (max-width: 900px) {
-  .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .grid-3 { grid-template-columns: 1fr; max-width: 400px; }
-  .two-col { grid-template-columns: 1fr; }
-  .kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .dash-body { grid-template-columns: 1fr; }
-  .flow-branch { flex-direction: column; align-items: center; }
-  .flow-branch-card { max-width: 280px; width: 100%; }
-  .nav-pill .slide-name { display: none; }
-}
+        .list-label {
+            color: #86868B;
+            font-weight: 500;
+        }
 
-@media print {
-  .nav-pill, .progress, .demo-btn, .scroll-hint { display: none !important; }
-  .deck { overflow: visible; height: auto; }
-  .slide { position: relative; opacity: 1; transform: none; pointer-events: auto; page-break-after: always; min-height: 100vh; }
-  .slide .stagger { animation: none !important; opacity: 1; transform: none; }
-  @page { size: landscape; margin: 0; }
-}
-</style>
+        .list-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .list-value.rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 150, 119, 0.1);
+            color: #009677;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+        }
+
+        .alert-item {
+            border-left: 3px solid #009677;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(0, 150, 119, 0.02);
+        }
+
+        .alert-item.critical {
+            border-left-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.02);
+        }
+
+        .alert-item.warning {
+            border-left-color: #FF9500;
+            background: rgba(255, 149, 0, 0.02);
+        }
+
+        .alert-item.success {
+            border-left-color: #34C759;
+            background: rgba(52, 199, 89, 0.02);
+        }
+
+        .alert-text {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 400;
+        }
+
+        .alert-status {
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #FF3B30;
+        }
+
+        .alert-status.warning {
+            color: #FF9500;
+        }
+
+        .alert-status.success {
+            color: #34C759;
+        }
+
+        .donut-container {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .donut-wrapper {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            flex-shrink: 0;
+        }
+
+        .donut-svg {
+            width: 240px;
+            height: 240px;
+        }
+
+        .donut-svg-segment {
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+            transform-origin: 120px 120px;
+        }
+
+        .donut-svg-segment:hover {
+            transform: scale(1.05);
+            filter: brightness(1.08);
+        }
+
+        .donut-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .donut-center-value {
+            font-size: 34px;
+            font-weight: 700;
+            color: #1A1D1F;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .donut-center-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: #86868B;
+            margin-top: 5px;
+        }
+
+        .donut-tooltip {
+            position: absolute;
+            background: #1A1D1F;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: translateY(4px);
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .donut-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .donut-tooltip-label {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .donut-tooltip-value {
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+        }
+
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(0,0,0,0.03);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-label {
+            flex: 1;
+            color: #1A1D1F;
+            font-weight: 500;
+        }
+
+        .legend-percentage {
+            font-weight: 700;
+            color: #1A1D1F;
+            font-size: 14px;
+        }
+
+
+        .alerts-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .text-muted { color: #86868B; }
+        .text-tertiary { color: #AEAEB2; }
+        .text-success { color: #34C759; }
+        .text-warning { color: #FF9500; }
+        .text-danger { color: #FF3B30; }
+    </style>
 </head>
 <body>
-
-<a class="demo-btn" href="mailto:hello@askyazi.com?subject=OM%20Bank%20x%20Yazi">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5H18l-3.5 2.5L16 14.5 12 11.5 8 14.5l1.5-4.5L6 7.5h4.5z"/></svg>
-  Let's Talk
-</a>
-
-<div class="nav-pill">
-  <div class="bar"></div>
-  <div>
-    <div class="counter" id="slideCounter">1 / 5</div>
-    <div class="slide-name" id="slideName">Introduction</div>
-  </div>
-</div>
-
-<div class="progress">
-  <button onclick="go(current-1)" id="prevBtn" disabled>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-  </button>
-  <div id="dots" style="display:flex;align-items:center;gap:6px;"></div>
-  <button onclick="go(current+1)" id="nextBtn">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-  </button>
-</div>
-
-<div class="deck">
-
-<!-- SLIDE 1: INTRO -->
-<div class="slide active" id="s0">
-  <div class="stagger" style="display:flex;align-items:center;gap:20px;margin-bottom:2rem;">
-    <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="28" fill="#1a2e3a"/><text x="28" y="33" text-anchor="middle" fill="#FBF7F2" font-family="'Instrument Serif',serif" font-size="22">y</text></svg>
-    <span style="font-size:2rem;color:var(--muted-fg);opacity:0.3;font-weight:300;">×</span>
-    <img src="data:image/png;base64,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" alt="OM Bank" style="max-height:50px;max-width:140px;object-fit:contain;border-radius:8px;">
-  </div>
-  <h1 class="headline stagger" style="text-align:center;">
-    Real-Time Customer Intelligence for <em>OM Bank</em>
-  </h1>
-  <p class="body-text stagger" style="text-align:center;margin-top:1rem;">
-    Understand your customers through WhatsApp conversations — from onboarding to advocacy, at scale
-  </p>
-  <div class="scroll-hint stagger">
-    <p>Swipe to explore</p>
-    <div class="scroll-mouse"></div>
-  </div>
-</div>
-
-<!-- SLIDE 2: USE CASES -->
-<div class="slide" id="s1">
-  <p class="label stagger">Tailored for OM Bank</p>
-  <h2 class="subheadline stagger" style="text-align:center;margin:0.25rem 0 0.5rem;">Where Yazi Delivers <em>Value</em></h2>
-
-  <div class="stagger" style="display:flex;align-items:center;gap:6px;margin-bottom:0.5rem;">
-    <span class="section-dot" style="background:var(--olive);"></span>
-    <span style="font-size:0.82rem;font-weight:600;">Customer Feedback — CX & Brand Perception</span>
-  </div>
-  <div class="grid-4 stagger">
-    <div class="card"><div class="card-icon" style="background:hsl(152,40%,92%);">🏦</div><div class="card-title">Post-Onboarding Check-in</div><div class="card-desc">WhatsApp pulse after sign-up. Track satisfaction, friction, and early churn signals from new customers.</div><span class="tag" style="background:hsl(152,40%,92%);color:hsl(152,40%,30%);">Onboarding · NPS · Churn</span></div>
-    <div class="card"><div class="card-icon" style="background:hsl(211,60%,92%);">🏪</div><div class="card-title">Branch Experience Survey</div><div class="card-desc">Survey triggered after in-branch visits. Measure wait time satisfaction and staff experience.</div><span class="tag" style="background:hsl(211,60%,92%);color:hsl(211,75%,35%);">Branch · CSAT · Ops</span></div>
-    <div class="card"><div class="card-icon" style="background:hsl(30,80%,92%);">📱</div><div class="card-title">App & Digital Experience</div><div class="card-desc">Proactive check-in after digital transactions. Surface UX issues before they hit app store reviews.</div><span class="tag" style="background:hsl(30,80%,92%);color:hsl(20,80%,40%);">Digital · UX · Retention</span></div>
-    <div class="card"><div class="card-icon" style="background:hsl(0,60%,93%);">🚪</div><div class="card-title">Competitor Switch Intercept</div><div class="card-desc">AI depth-probe when a customer signals intent to leave. Understand what competitors offer.</div><span class="tag" style="background:hsl(0,60%,93%);color:hsl(0,60%,40%);">Churn · Win-back · Intel</span></div>
-  </div>
-
-  <div class="stagger" style="display:flex;align-items:center;gap:6px;margin:0.75rem 0 0.5rem;">
-    <span class="section-dot" style="background:hsl(211,75%,40%);"></span>
-    <span style="font-size:0.82rem;font-weight:600;">Market Research — Trackers & Ad-Hoc Studies</span>
-  </div>
-  <div class="grid-4 stagger">
-    <div class="card"><div class="card-icon" style="background:hsl(280,40%,92%);">💳</div><div class="card-title">Product Concept Testing</div><div class="card-desc">Test new product concepts with segmented panels before launch. Validate pricing, messaging, features.</div><span class="tag" style="background:hsl(280,40%,92%);color:hsl(280,40%,38%);">Product · Concept · Validation</span></div>
-    <div class="card"><div class="card-icon" style="background:hsl(93,30%,90%);">🏬</div><div class="card-title">Partner Channel Experience</div><div class="card-desc">Survey customers after interactions at retail partners. Optimise experiences driving adoption.</div><span class="tag" style="background:hsl(93,30%,90%);color:hsl(93,22%,38%);">Partners · Retail · Ops</span></div>
-    <div class="card"><div class="card-icon" style="background:hsl(180,40%,92%);">📈</div><div class="card-title">Brand Perception Tracker</div><div class="card-desc">Quarterly brand health pulse across demographics. Track awareness, trust, and consideration vs competitors.</div><span class="tag" style="background:hsl(180,40%,92%);color:hsl(180,40%,30%);">Brand · Tracking · Quarterly</span></div>
-    <div class="card"><div class="card-icon" style="background:hsl(350,50%,93%);">🎯</div><div class="card-title">Segment Deep-Dives</div><div class="card-desc">AI-moderated interviews with specific segments. Rich qualitative insights without traditional focus group costs.</div><span class="tag" style="background:hsl(350,50%,93%);color:hsl(350,50%,38%);">Qualitative · Segments · AI</span></div>
-  </div>
-</div>
-
-<!-- SLIDE 3: FLOW DIAGRAM -->
-<div class="slide" id="s2" style="padding-top:2.5rem;padding-bottom:2rem;">
-  <p class="label stagger" style="margin-bottom:0.15rem;">How It Works for OM Bank</p>
-  <h2 class="stagger" style="font-family:'Instrument Serif',serif;font-size:clamp(1.1rem,2.2vw,1.6rem);text-align:center;color:var(--muted-fg);margin-bottom:1rem;">
-    OM Bank · <em>Automated CX intelligence loop</em>
-  </h2>
-  <p class="stagger" style="font-size:0.78rem;color:var(--muted-fg);margin-bottom:1.25rem;text-align:center;">Automated CX orchestration via Yazi</p>
-
-  <div class="flow-container stagger">
-    <div class="flow-card trigger">
-      <div class="flow-icon" style="background:hsl(0,45%,92%);">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="hsl(0,50%,45%)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9l3 3-3 3"/><line x1="15" y1="9" x2="15" y2="15"/></svg>
-      </div>
-      <div class="flow-card-text">
-        <h4>Trigger Event</h4>
-        <p>Customer signs up, visits branch, or completes first transaction</p>
-      </div>
-      <span class="flow-badge" style="background:hsl(0,50%,93%);color:hsl(0,50%,42%);">Trigger</span>
-    </div>
-
-    <div class="flow-connector"></div>
-
-    <div class="flow-card whatsapp">
-      <div class="flow-icon" style="background:hsl(86,35%,90%);">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--whatsapp)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 5 9-5"/></svg>
-      </div>
-      <div class="flow-card-text">
-        <h4>WhatsApp check-in sent</h4>
-        <p>Personalised message within 2 hours of trigger</p>
-      </div>
-      <span class="flow-badge" style="background:hsl(145,40%,92%);color:var(--whatsapp);">WhatsApp</span>
-    </div>
-
-    <div class="flow-connector"></div>
-
-    <div class="flow-split">
-      <div class="flow-split-leg" style="left:calc(16.67% + 8px);"></div>
-      <div class="flow-split-leg" style="left:50%;transform:translateX(-50%);"></div>
-      <div class="flow-split-leg" style="right:calc(16.67% + 8px);"></div>
-    </div>
-
-    <div class="flow-branch">
-      <div class="flow-branch-card">
-        <div class="flow-branch-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="hsl(240,30%,55%)" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
-        </div>
-        <h4>Quick Pulse</h4>
-      </div>
-      <div class="flow-branch-card">
-        <div class="flow-branch-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="hsl(240,30%,55%)" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
-        </div>
-        <h4>AI Depth Probe</h4>
-      </div>
-      <div class="flow-branch-card">
-        <div class="flow-branch-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="hsl(240,30%,55%)" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
-        </div>
-        <h4>Save Attempt</h4>
-      </div>
-    </div>
-
-    <div class="flow-merge">
-      <div class="flow-merge-arrow"></div>
-    </div>
-
-    <div class="flow-card data">
-      <div class="flow-icon" style="background:hsl(37,40%,90%);">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted-fg)" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
-      </div>
-      <div class="flow-card-text">
-        <h4>Yazi data layer</h4>
-        <p>Responses processed, tagged, and stored in real time</p>
-      </div>
-      <span class="flow-badge" style="background:hsl(37,40%,90%);color:var(--muted-fg);">Processing</span>
-    </div>
-
-    <div class="flow-connector"></div>
-
-    <div class="flow-branch" style="max-width:620px;">
-      <div class="flow-card output-dash" style="flex:1;">
-        <div class="flow-icon" style="background:hsl(211,40%,92%);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="hsl(211,60%,45%)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 17v-6M12 17V9M16 17v-4"/></svg>
-        </div>
-        <div class="flow-card-text">
-          <h4>Live Dashboard</h4>
-          <p>Real-time KPIs, trends & segment views</p>
-        </div>
-      </div>
-      <div class="flow-card output-alert" style="flex:1;">
-        <div class="flow-icon" style="background:hsl(30,50%,92%);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="hsl(30,60%,40%)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-        </div>
-        <div class="flow-card-text">
-          <h4>Retention Alert</h4>
-          <p>Instant alerts on at-risk customers</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SLIDE 4: COMPETITORS -->
-<div class="slide" id="s3">
-  <p class="label stagger">Competitive Intelligence</p>
-  <h2 class="subheadline stagger" style="text-align:center;margin:0.25rem 0 1rem;">Your Competitors Are <em>Already Listening</em></h2>
-
-  <div class="warning-banner stagger">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="hsl(30,80%,50%)" stroke="none"><path d="M12 2L1 21h22L12 2zm0 4l7.53 13H4.47L12 6zm-1 5v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
-    <p>Without a real-time feedback loop, <strong>OM Bank</strong> is flying blind on what keeps customers or drives them to competitors.</p>
-  </div>
-
-  <div class="grid-3 stagger" style="margin:1.25rem 0;">
-    <div class="comp-card capitec">
-      <div class="comp-name">Capitec</div>
-      <div class="comp-stat" style="color:hsl(211,60%,50%);">24.1M active clients</div>
-      <div class="comp-desc">Dominant mass-market bank with best-rated app in SA. Heavily invests in CX research and digital optimisation.</div>
-      <hr class="comp-divider">
-      <div class="comp-doing-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(211,60%,50%)" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg> What they're doing:</div>
-      <div class="comp-doing">In-app feedback loops, dedicated CX research team, continuous NPS tracking, behavioural analytics</div>
-    </div>
-    <div class="comp-card tyme">
-      <div class="comp-name">TymeBank / GoTyme</div>
-      <div class="comp-stat" style="color:hsl(280,50%,55%);">10.7M clients across SA & Philippines</div>
-      <div class="comp-desc">Fastest growing neobank. Kiosk-first model with Pick n Pay drives massive reach into underserved segments.</div>
-      <hr class="comp-divider">
-      <div class="comp-doing-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(280,50%,55%)" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg> What they're doing:</div>
-      <div class="comp-doing">Automated onboarding feedback, retail partner surveys, WhatsApp support, kiosk experience tracking</div>
-    </div>
-    <div class="comp-card discovery">
-      <div class="comp-name">Discovery Bank</div>
-      <div class="comp-stat" style="color:hsl(350,60%,50%);">Vitality-integrated banking</div>
-      <div class="comp-desc">Behavioural banking pioneer. Vitality-linked rewards create sticky retention loops with deep data analytics.</div>
-      <hr class="comp-divider">
-      <div class="comp-doing-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(350,60%,50%)" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg> What they're doing:</div>
-      <div class="comp-doing">Advanced behavioural analytics, personalised CX journeys, real-time engagement scoring, reward-linked NPS</div>
-    </div>
-  </div>
-
-  <div class="cta-bar stagger">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-    <p>With Yazi, OM Bank can leapfrog competitors — launching real-time CX intelligence on WhatsApp, the channel your customers already live on.</p>
-  </div>
-</div>
-
-<!-- SLIDE 5: DASHBOARD -->
-<div class="slide" id="s4" style="padding-top:1.5rem;">
-  <p class="label stagger">Live Reporting</p>
-  <h2 class="subheadline stagger" style="text-align:center;margin:0.25rem 0 0.75rem;">Your OM Bank <em>Insights Dashboard</em></h2>
-
-  <div class="dash-container stagger">
-    <div class="dash-header">
-      <div class="dash-header-left">
-        <div class="dash-header-dot"></div>
-        <span>OM Bank — Customer Intelligence Dashboard</span>
-      </div>
-      <div class="dash-live">
-        <div class="dash-live-dot"></div>
-        <span>Live</span>
-      </div>
-    </div>
-
-    <div class="kpi-row">
-      <div class="kpi-card"><div class="kpi-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted-fg)" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> Response Rate</div><div class="kpi-value">32%</div><div class="kpi-delta">+8% vs email</div></div>
-      <div class="kpi-card"><div class="kpi-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted-fg)" stroke-width="2"><path d="M14 9V5a3 3 0 00-6 0v4"/><rect x="2" y="9" width="20" height="11" rx="2"/></svg> NPS Score</div><div class="kpi-value">47</div><div class="kpi-delta">+12 vs Q4</div></div>
-      <div class="kpi-card"><div class="kpi-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted-fg)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Avg. Response Time</div><div class="kpi-value">1.4 hrs</div><div class="kpi-delta">from 3–5 days</div></div>
-      <div class="kpi-card"><div class="kpi-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted-fg)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Active Surveys</div><div class="kpi-value">3</div><div class="kpi-delta">247 responses today</div></div>
-    </div>
-
-    <div class="dash-body">
-      <div class="dash-panel">
-        <div class="dash-panel-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--fg)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-          NPS Trend — Post-Onboarding Survey
-        </div>
-        <div class="chart-area">
-          <svg viewBox="0 0 360 130" preserveAspectRatio="none">
-            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A6B3C" stop-opacity="0.12"/><stop offset="100%" stop-color="#1A6B3C" stop-opacity="0.01"/></linearGradient></defs>
-            <line x1="30" y1="10" x2="350" y2="10" stroke="var(--border)" stroke-width="0.5"/><text x="24" y="14" text-anchor="end" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">49</text>
-<line x1="30" y1="35" x2="350" y2="35" stroke="var(--border)" stroke-width="0.5"/><text x="24" y="39" text-anchor="end" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">44</text>
-<line x1="30" y1="60" x2="350" y2="60" stroke="var(--border)" stroke-width="0.5"/><text x="24" y="64" text-anchor="end" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">40</text>
-<line x1="30" y1="85" x2="350" y2="85" stroke="var(--border)" stroke-width="0.5"/><text x="24" y="89" text-anchor="end" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">35</text>
-<line x1="30" y1="110" x2="350" y2="110" stroke="var(--border)" stroke-width="0.5"/><text x="24" y="114" text-anchor="end" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">30</text>
-            <text x="70" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W1</text>
-<text x="116" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W2</text>
-<text x="162" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W3</text>
-<text x="208" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W4</text>
-<text x="254" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W5</text>
-<text x="300" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W6</text>
-<text x="346" y="126" text-anchor="middle" fill="var(--muted-fg)" font-size="8" font-family="DM Sans">W7</text>
-            <path d="M70 99 L70 99 L116 84 L162 68 L208 52 L254 63 L300 36 L346 21 L346 110 L70 110 Z" fill="url(#g1)"/>
-            <polyline points="70,99 116,84 162,68 208,52 254,63 300,36 346,21" fill="none" stroke="#1A6B3C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="70" cy="99" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-<circle cx="116" cy="84" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-<circle cx="162" cy="68" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-<circle cx="208" cy="52" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-<circle cx="254" cy="63" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-<circle cx="300" cy="36" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-<circle cx="346" cy="21" r="3.5" fill="var(--bg)" stroke="#1A6B3C" stroke-width="2"/>
-          </svg>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:0.75rem;">
-        <div class="dash-panel">
-          <div class="dash-panel-title">Sentiment Breakdown — This Week</div>
-          <div class="sentiment-row"><span class="sentiment-label">Positive</span><div class="sentiment-track"><div class="sentiment-fill" style="width:62%;background:#1A6B3C;"></div></div><span class="sentiment-pct">62%</span></div>
-          <div class="sentiment-row"><span class="sentiment-label">Neutral</span><div class="sentiment-track"><div class="sentiment-fill" style="width:24%;background:hsl(40,80%,55%);"></div></div><span class="sentiment-pct">24%</span></div>
-          <div class="sentiment-row"><span class="sentiment-label">Negative</span><div class="sentiment-track"><div class="sentiment-fill" style="width:14%;background:hsl(0,65%,55%);"></div></div><span class="sentiment-pct">14%</span></div>
+    <div id="root">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAADICAYAAADGFbfiAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAc9UlEQVR4nO3deZAj1X0H8O+L7YqTVFzaxHEqZRv3xAXm3NVwLdfuajgMGMxqEoc4ENgWh7kWdobL2IaZncUYWBZmlnMxBPVi44OqZLSEG5bRHpgsx45YDht8jACnXE65jOwkTipV1i9/PGlH01K3up+6NZL2+6namh1N66l7Rupvv9973a1EBERERGH9wXyvABERdScGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIEREZYYAQEZERBggRERlhgBARkREGCBERGWGAEBGREQYIERGZEZFI/3WCJWuPGPL62cHXH5M8eM0xiXauDxFRJ4h6f//B+d6gqAzceniqLGqFCNIiSACY8Fh0hUANJceW5MqiNu5avTXXzvUkIuoVXR0gJ4wfmhAouyxYBYGlKo8LUPB52juVr2kA6YNGlxbLoh4UQfbN67cUY11hIqIe0pUBctLth1giarQsSEOQUABcxTO/AHH/zAIwAmBkv2tTTlmw8a0b8vkIV5eIqCepqMctlFLNFzJ0yp0HJ0WwSkTZZVEQAapfRRRmH0Nm29U7HK92+tcskdrnNmgjXxY19pMbn8vHtjFERG0W9f6+K3ogp93dnxTBuAhSATe/2bhGDrqE5SUFIPXpa47Nl0WNzdy8OR/sZYmI9hwdHSCDG5KWCEZFYIfIzdy2q3eU/BYQYBP8A6QqBSD1qauPy4uosXdveTYffDWIiHpbR5awvnDvooQAoyJqqLy7tOT+2qj8hKKIGtxy1Q6/MRAAwKKxJdMiKuldBpv9WvP/HIDhn697ptjyRhIRtVnk+/tOC5DT71tolwXjIirRODga7uhLImrsuSte9Jq629DC1UvtsmBURFkBA6T6dQ2A8V/c9rRvT4eIqJP0bIB88f6DkgKMi6jU7M46UIDkRJDZfPlLRjvzA0eXJkTUqAiGQgQIRPd2hn858RTPIyGirtCTAXLGAweOiaiR+p20b4CURDD89NDLTqM2j775iLSIWlHWgZSoLJ8TURtfuW573r38ftctS4uorO75BAmQmgADMr9a/yR7I0TU0XoqQM7KHpAsA1mISnrtpD0CpCSCgSdXvVI31rF07eKEQE2KIFXbhqv9iemR7cPu5+57bcoqi5qEIBkiQCCCUllU5td3PMHeCBF1rKj39/N2McWzN+4/BIUpBSRDPrUANA4PAIDCFPTsKR9qKDm2ZMz96I++ni8CGGhyJnsjCQCTC1aePJm45HO8zhYR7RHa3gPJPLhfQqCy+ppV3rOqPHogBREMPHbpzoblomXrFtsQZN1jFWVRxbKecZWo7T2IoO/V1duK7nb2/upAoixqqtoTCdADqf1aFGDwt3c9HjaEiIhi1dU9kHO/tW8SCtMIdg6GWwlAxis8KkZd3w+/8JUX+nZ89QcDAPpQ17NQmUaN/PgbUyWY9UQAwIKo6T+96BTPKwITEfWCtgXI+Q/ta0NhWulrT4VVUsDAoyt3+u7QXW0XfnDNC7un9b70tedLAgzWLi/AUq+2fnrjcyVADcAsRABg/E8uPDX7xxeeypIWEfWktgTIlx76zDiAbAtNDD9yyXTYHfkj7gdeufb5YpgGfnbT5pIAGejejwlbBFMfvuDzDBEi6jmxBsiF390nceF3PzMJhVbKOc6mi6cdg+ed7X7gkK8fbYVtpHjz5gJ0iJhKQjDzh1/6fNjJAkREHS22ALn4e/sklJ4RZTLeUSFFBdRNt/Vcem65yTrqpiOzR954ZAIADrvhaEsBk7XLK8imIO2+s/bZHJpfoNFPQgRTHzrvtFQLbRARdZQ4eyBTCD9F121s8qJCmPLRetf3NqDeX/yNo6YBzLjWpwTACdpwi6UsACoBYOqD553WQqASEXWOWALkku/vbSnVcnjgXy581Qmz/JYrdzjSOBQarcvwq6u3BQ6E9255NlTgeBFRK1ptg4ioE8TVA4mk3v83Gxalwj5n61U7Mmg6c0rWFEa3OQarZBk8x41jIUTUE2IJEKXQH1FT42GfsPSWxQFKZ2okObYk1MD+J686PoWWxnN2sz5w7nLOyiKirhdXD8Tz/IpwVHLwnmTdJUd8n9H0Mia7LQ/a5qeuPj6hDMLMB3shRNT14rojoRVVQwKMLL+7fyboVF4BigFfvxhiNbKIdqc/ACAfYXve7HQCuue0DDpcrQZLFaHLfpsA5ODkwk8WsNO1QT8FJ5cP3YZ/+0mEC/Gtla/vAyi0tD522oL/VG7z7dV/H7+ZhjNwck7N8ino90806xG0vea/g6hk4eSKlddMYT62NVhbCbhmddYowMkFnj3aoO0UotzuGHV8gFRkT7urH49cEiBEBMPw/sNWFyoBKlDPpu/Lx2XLEknpavbVBXtF2V5D+gM/Ch0ezUpmVuVfGkAWdtoBMLb7gxzMiOv7fIjnBpFA8N4l6pa104Ceir1pzg45GAv121frMtjpPqPg1eHh13YecydvDARYPoyg7VlNlovKFGYP7uZrW4MYhvf7MQU7vT7k56dW1Nsdm8hLWJc+vHcq6jYBQIDxU+88uGnbW6/ekROg32M2FgAMK6CvMFp/EUW3v77m2CwAO8x6BmTF0OYsOz0EYBp63U3GW2wAM65eRS+oBuQM7LQdYbsJ1F+HrTndq2rHTpmiV3eissuqtqzFPItjDCSuAeIEgKlT7jjYbrbg9qv/rQBp3MPYed32iZ0j25seKX76K8dmVTzhAYQ7kg7OTidgpyehSz2N/g45AGugSxED0EdRa+B9RDMCOz1V6a73Egs6SKYqPbUoDFVKD2FEOa5G7WKn02h+EGj34OemThwlrKhmYDUkQPbk2w9JPHHZK773P3/+mheKR910pPvhfLP29/naQEIEkyJIRXvh45jpN2ujGWhFAGNoPLaRdz1/GMBlmBs+KQBTsNMDhiWauAwEqgXrnXoSwArU/25SAKYr2xbF5ffHEfT9r3tAqQhek9ovSO+iOvboxLsq8yuGHoh8JPo264yfuP7Q7GcnDo004fe9NpUEMBViJpcxdU7oo9VmGg30OwD64eScpjt/J1eCkxuFvuy9+7ItSTQdV+pQTi4PJzcBJ9ePxpMXdPDqclKrkoHKfjqs2fvoRrrHmgq4dPiyZpeJo4TVrimqNoCpE8YPi+T19rsuZQNGd0icf3rMwz3Qn4GTy4TuNeggGUT9kVOq68dEdJhUS3e19IyaaEoOlwUoi3mVGDtZCTp8m/3zE+T5ndTLbSRMKFgGZc2uEtcsrHZJCjB13G2HDW++/CXHtJEDRpaNi8gQoNDGslUSUcymmJ1tVWvYYKbRXE4uU5m5ZNc8OgI7nW1hdklncHITsNMlzL3FgFX5frDhc4Kr9i4at6N3KHaLr9F+usTnNbV0lp32/gjp8O5es1Piw1iFDpo1FbU4eiBWDG36SQDIHnvr4ZOpdYeHOqpbuHqpdeDo0mmgpcvNm1oQUTujmHs0q0s2UXByjS4L0xvdch2w7p5IOqIjxnRloLWRVu6LQ/PLRvieYzrCiRodJ/IAUSpUgGS+nXlDPXTO6+q7576mRNffBwWYQPg7AaYBTC+7ZXGq5rG818KL9KVMpg1KVgUADiDD0Edk1X+D0u7utz4isl2PRn2yl3sn2zuzS3TQ5l2PRjX9crzu96RLgFZE7VP7eb03StCzGcM+r+vNZwkr96D9hlP7wPfPe60IPWsoBwCDG5LVLuNyBOo6Kgt6JpLyW6p/zZJxEQwFL1dJDlCbFJD/+a3PFL2WSqz8XALtPcK0Xd87kZeXnFwedjqPuQOHNnTI94IM9KX+q9Kw04kIZpxZ0L01HcD6KJTnfHQr/6m7DvTn3uvva8NOj3XYLMZItO2e6A00PdV/8sJCKXdRwdl08fSgCBaIfk6xhdesPjdIr6MA/XoL3lm7efDdW5513lvnHR4AULrzcQcB650ikVwvzH09r0A3yDKw0fX9sphep/104OZdj0Z15YGhmtldfgcWPbdj6UF+vYjqWeeOx89Nxk66wnwFiLNxxZvFME94dOV06bGVOycev3Rnn+iSkRP2RRXwbpNFSoA4APp/cuNz/T+96bmJmZs3h/1wt3OmUqrm/yU4Off026i42001WqiLuYM3TEDm4V9uzTY556OEEHfdpHngP3U3V9Prdx9o1eqNsUOXeQkQBXHfOTCUJy97Jf/UqpczIlgAYE0EYw9F6Bpm31s35DNvf2PK+KSy39z1eF7Cj9+EVz8wF99r6q53bfuJnhkH0dy/Oyvk8/0CIAn/3scYWutVU/z8eh+zoaFPbC16LNeTU3rnI0AK2bN/GMnO7pnhl0vPDr80ClF9EiBIBFjoeqgIIPPGmi19b16/ZfSHX89HVUpoKSADslzfxx1a7t9N950v46X+jHbL4PkmY0KFyGbMUTwaT1SpKjbo9ft99ntuMH0+AsSvm2fkuSteLE1d8eLolit3LBAgv2TtYstj0epRcwnA8K7VW/teG9vqRL0+qC/5tMNvY24//l5V57AMnmPSk2jH5dGpNX5Xs24UFg68D2R7bkrvfARILDvXgVsPTy5bt7h6GRKryeK7AIwuXL107KDRpZGXYv7z7sdKMj8hEqdeKllFT5f5wgTCmoiuv0Xx8hu7cOofyZXg/9nvqYOGdgdI8YGzfliMssHjxw+zjr3tsKzS53SkXD/22+kloKfdzRwwsiyOge+4ZkR5cZfnoma5vu+dmUP14zl5o3aCl7IKleuOUSfTYxaWx0/9ri/nV8a6rJVV6jTtPg8kH/YJ6XuSlohKlwULRNTkoyt3FgDgxPWHWmXBqAhsBbgvQVI9sgtSp08AGNn/umVni6j1ZYHz1g350qe/cmxCBCkR1V8WTL+zdnPYHkU+5PJhtTrwG9bc9nvr6DnK8Zwx6LKH5bNMTx2F9oiZBo/5jVkkYaenDF4nATttt3ypoQ7R1h6IAraEWb5yIuE09LWFRgBMf+6Og7Mn3X5IFsCM1/06tl29w+To2Kq8zsw+Xx0Yg76w4qR+XTW511XHh7p66n/d81hR4pxdo49+arczGdvMKF23tWoe6aXwAOrPp9nacKkgmpey4ixdmdzp0q/nOm26Im1gctVvv3OvinO+0+95v3M3ktAVD69/fnpmML3dPRDfD87f339QUkQlRJAoiyqVdbfCvVNs1OOolW+2EqLPVvc4a1QlAIw0eI0kAHz8ihNSZVEQURBB4ZcTT/mFVQHeR6JRlIDymPsmTyOe+w+4P0j5GF5jPrm3r7VL1+uz9ydQf421KEpXfjt1k56U5fOz+S5TNuoVVKUM2rNCLBvnTj4JO53qpHubm2prD+T+f/xRwwA544ED01+8/6AZpT8cU9Af4CkFCfNBLgGS2XLVDr8rfqYAoDCyLS/6xj9hjgSTn7jyhPcr61f99/5frDop+9FVJ3kd+e/yakwp75+F4B5niauu7v4wtXt8Jz76JD+r5pFiRD2ERrOyoihd+e3Uk6Fm+ehl/UKnGLitePi9fthtTcI/QGb/5v5Td6OyIub22yLyABEJV944M3tAVgGTjS/CqIKWZHIA+vJXvuhUHzj6piNTfk94dXRbYdfqrf2Vy6MEOdJKoPGgvA3B9J9fenKjD+L7Ado1p+uotetuRXyvb68dbD7S15gvekfhDt1ozuGpL2VFU7pq/rsPU2r1W7Y075ftb76tYQ6Y/JYtugbE/abuRsXuhSm9cfRAvHbGdR+es7IHpFu873hRAQObL39p8LkrXjTqbr8+tnUCQL+0VpaxpPHZxn47jKjC5XbX9+ORvTEb3zmvu28qNVcW7nCMsgQ4Oysr6llXfhM60oEOIvQyfjX+TpmG7vcZsiPa1rzr+3aNUXT9ZIo4xkC8duT1jyuMuwYaigDWV84oX4Hmdc6xZ4Zfynv8rOERxCHXH5N65brtc57zxpotRQAD+16bmkbzOrIDXcJZhrk17uSCS0+237/jCafJ86uiGkgdB3A2ZneECei767V2D/PZe6zX/h4LvTJ7BHY6i8Z3cYy67j+G6K9MsAn+O8Qs7PRyAGN1vR5dyhlt8nwghhN+Da2H/6Vgot1WPXXXax9QRPidfhLePb3LEL7svFcLl0QpIeIJMDEEiNqFAFeePNvZPwl95F4hRUD1P3z+ruoH2BnckJxs0laf92qgP+ztBZW+w6HfzzM/v/UZp/Jt7mNDJ26C3slqghWIZxDbm5MrwU5n5qyHftNOGYfIbHjUfpDCnijXmXTvLIv6g5OJWEpz9bPlomjTgZ0ehX9NPw3dG6ndaSQRrDTTSWXKHJrfAriVbc27ttVvbOJBg99LHnZ6FRr/rUym9Nowr9rkEeSukiG0cxDd/cd0f7/+e+e95v6gNSuX+MzDFq9pfp6/wCZnjxffW7c7PAAA/zHxVB5zEz3MLJjojgT0m9p9Q5skgJnQYyL6vgczqN+W4a4+98NOW7DT49DblnL91IGT67Yr4gZd3wRmp5YGret3zoGCDuCgZVOTbZ1tWx9c2D7LhprKX6Nnr48VRwnLa4pss6OwIEdpRcwmufP00Mt5n2VNpjSOyeybr4S5b8IgpTn3m9Zzm+SBiEslTm4UdnovzP0AJKC7+KPQH5R8w4HR2Xs9e5UNMyGPklrpZleVmgRWsnLPdj8WgEXQ2+T1fljTlWeFO7kc7LSD6GcLremg3oem72G/CPFvq19w+p153owD7/Dp6im97RoDKQHi/uO4l1uF+vKPuzu5+4ZST616udnRsNXoQfE5mehHX88X9vnaQB/0zqYoc0sdyU9eeXzqvXXP5qvLf2zoxKTInB1uvub/+N2GRwt/dMGpDurf+PEcyTu5DOz0FtTXjK3dj9npIuZOj7Tgf65KxuA+IzZa/7Dn4d/dNj0arCpCb1u+xXbmj/57A9HtWJ0ODtNhRHtjpkbb6neZEfMxIV1mduD9d1qBLj23KvIAueP0HxdWPrx37UMlBQx888y3irUPPmi/WTjLOaCI3Tsvlfzi/QdNl0WNiaBUFrVCBLZrTCL/+KU7Ax0FqDnjK3P4dm3fvmGqhMof86+vOW4Tao7IBWry41ecMFwWVRRRVllcOzFVf37E/9z7aObDX/o8MPfNU2y+BYZ0fbwAvYNNNVjCQrATqnLQZatiVKvWIYrQA67OPK9HNHSIvIvWbpdbgv5bO9GsVAz00f9g5b7yrW5r/UGRLvV67RuiGBPaCO8Aqd7yttjia7RdXGMg1SPsEiAD957xVuMjbqmr4yZROYkQrl+2AtY8ujJYeByz9oiUz4/DlLYc1JeospX1y6r6EpfTqJH//ea/Zmp/FtFJhN6cXAFObgD6CD5s78EBMAAnN9iNb2gPeejptP1wcn0dvaM0oY+k++B/KfFGiqjcSK1rfifRbGujz4T/LWtb5X+zKaCTxp1CiOtSJkVASgpq8J5/eNvzj/ytzBu5M7MHOGjeBXceuWQ6TNfa8vvhwWuOSe0cmTuVt5Gf3bS5ZH35uAHUT2d1Kylg4Nd3POG5rf933yOZD513WvVIsT3XGNJv2nxljCMFffb9QtQH3y4A0y3eEjfS2R2o3zkUQr5GszGUMPxeO4qxrNbb12GfAZCpjD8NQF8by2rwWu9Aj4fFUUqN+n1QL55t9ZuUENXvaQDBLm1UPUiNWtRT1KFEQs51bdagUlj58N7Wnaf/uBj0OWc8cGC6XFbjACx9nSmg8rVUFjWWu6gwEWYdlqw9YlwEQ9VrVpVn20NZFCAY3jmyPXCbn7r6eEsE2bKo1Oy67W4vL8Dwr9Y/GehN9oFzl6cAFH//T5uKYbaJiKhVke/v4wgQU5WLKVoisMqiCv98wat5k3aWrD1iWgRJrwARQW56ZPtg2HY/ceUJlghSZVF9IpgRUflfTjxVNFlHIqJ26+kAicLStYsTAvV+bU+hQYCUpke2L5jXFSUiarOo9/ftvpz7bmdv3D8JUYmyoPDtzBtR1uYCTPNTieTYkmRhdFtkNeA/u/Tkau+k8Ju7Hu/eE+6IiAJqW4Cc/9C+VrmMtEAtr44lVLKwdOYDBw4/dM7rTiQvpLA84CVMViCCwbGPrjopIfrOiEPVxz5y8SkQQa4saosAzu82PBr54BUR0XyLvYR1wXc+Y4lgVKDssqBSUtLlpGp5qfK1IKLGvnfea8YzgZatW2xBMDO3XNWohKXLWIXRbcZlrL8cPjEhgmERdVnlBlju9lGe3T6nMpWXiGjeRL2/j/1aWPee8VYRwLvNl1RJAJOn37dw5u++uXDob+9dZBm8XJiddGLR6iV22Bf4+BUnJP/q8s+OK31L3RE0v+ZOCapjrmxKRBSZtg2in//QvulyGVmBSjTugcwZ5K4eyefLgk0iKr/p4mnfctPArYcnRdR0gza8eiDQZ5Sj/7WxrZ4lJuvLxyVEl9yWlUWlKzPE5vQyGr1m5f8FATK/2/Aox0SIaN519Sysc7+1b7IMlRVRyYABUlviqgZKUUS9WxY1I4JipUyUEFGj1XZDBAhEkK9cPgUiCr8XZUHQ93tRC0Vgiahkk5Dw+lmuDJX573s4/kFEnaGrAwQAMg/ulxCorAjSBgHiuXyzNoLs/L3aCB8gGP7t3Y+HOvmRiChuXR8gVWdv3H9I9xqQ6KEAKYqowRKn8RJRB+q6QXQvD654cwKCAYnr0ubtNwGFfoYHEe0pOuJM9DMeOHBMRI10aQ+kKEDmV+ufzEf6iyQiiljP9EBqfeec10dF0N+FvZEJpaSf4UFEe6KO6IHUOv2+hUNlwaiISnRwD6QAYPgXtz2dj+SXRkTUBj0ziO7nC/cuSggwLlJ79npHBEhJBMP/fuszTuu/KSKi9tojAqRqcEMyKYJxEZWa3wBBSUTdLoLx99Y9y/M6iKgr7VEBUrX87v5UpayVmocAcUQwXFy7mcFBRF1tjwyQqlPuPDglu4Mk1gAplUXlBBj76Y3PFWPbICKiNtqjA6TqpNsPSYmoFSKwIw6QUllwu0CNv33DFHscRNRTGCA1Tpg41BJRq8oCW9+cyjhACiJY/+b1W5y2rTwRUZsxQDwM3Hq4XRa1HIJ0wADRZSrB+tfGtnbb+SdERKExQJpYestiS0Sly4IV+uq8dQGSE8Gm6ZHtzryuKBFRmzFAQjjqpiOtsr6Hx6KyqC0Q5F669nmObRDRHqnjA4SIiPYMHXEtLCIi6j4MECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLCACEiIiMMECIiMsIAISIiIwwQIiIywgAhIiIjDBAiIjLy/0bcZEGi0A+KAAAAAElFTkSuQmCC" alt="Old Mutual" />
+            </div>
+            <div class="sidebar-subtitle">Yazi Dashboard</div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-tab="survey-overview">Survey Overview</div>
+                <div class="nav-item" data-tab="branch-experience">Branch Experience</div>
+                <div class="nav-item" data-tab="customer-segments">Customer Segments</div>
+                <div class="nav-item" data-tab="product-feedback">Product Feedback</div>
+                <div class="nav-item" data-tab="alerts-triggers">Alerts & Triggers</div>
+                <div class="nav-item" data-tab="regional-view">Regional View</div>
+            </div>
+            <div class="sidebar-footer">Powered by Yazi</div>
         </div>
 
-        <div class="dash-panel">
-          <div class="dash-panel-title">Top Issues — AI-Categorised</div>
-          <div class="issue-row"><div class="issue-dot" style="background:hsl(0,65%,55%);"></div><span class="issue-name">App loading speed</span><span class="issue-count">89 mentions</span><span class="issue-sev" style="color:hsl(0,65%,55%);">High</span></div>
-          <div class="issue-row"><div class="issue-dot" style="background:hsl(40,80%,55%);"></div><span class="issue-name">Branch wait time</span><span class="issue-count">64 mentions</span><span class="issue-sev" style="color:hsl(40,80%,55%);">Medium</span></div>
-          <div class="issue-row"><div class="issue-dot" style="background:hsl(40,80%,55%);"></div><span class="issue-name">Fee transparency</span><span class="issue-count">41 mentions</span><span class="issue-sev" style="color:hsl(40,80%,55%);">Medium</span></div>
-          <div class="issue-row"><div class="issue-dot" style="background:hsl(0,65%,55%);"></div><span class="issue-name">Scheduled payments missing</span><span class="issue-count">37 mentions</span><span class="issue-sev" style="color:hsl(0,65%,55%);">High</span></div>
+        <div class="main">
+            <div class="header">
+                <div class="header-title" id="header-title">Survey Overview</div>
+                <div class="header-subtitle" id="header-subtitle">Key metrics and response rates</div>
+            </div>
+
+            <div class="content">
+                <div id="survey-overview" class="tab-content active">
+                    <div class="overview-wrapper">
+                        <div class="overview-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value">24,600</div>
+                                <div class="kpi-label">Total Surveys Sent</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">17,200</div>
+                                <div class="kpi-label">Completed Responses</div>
+                                <div class="kpi-subtext">69.9% rate</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">3.1</div>
+                                <div class="kpi-label">Avg Completion Time</div>
+                                <div class="kpi-subtext">minutes</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">12</div>
+                                <div class="kpi-label">Active Campaigns</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">78</div>
+                                <div class="kpi-label">WhatsApp Open Rate</div>
+                                <div class="kpi-subtext">percent</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">3,480</div>
+                                <div class="kpi-label">This Month's Responses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="branch-experience" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Branch Satisfaction Metrics</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Wait Time Satisfaction</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 72%;">
+                                            <div class="bar-value">72%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">7.2/10</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Staff Helpfulness</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%;">
+                                            <div class="bar-value">88%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">8.8/10</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Problem Resolution</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 76%;">
+                                            <div class="bar-value">76%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">7.6/10</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Digital Services</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 82%;">
+                                            <div class="bar-value">82%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">8.2/10</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Overall Experience</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 80%;">
+                                            <div class="bar-value">80%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">8.0/10</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Survey Stats</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Respondents</span>
+                                    <span class="stat-value">2,840</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Rate</span>
+                                    <span class="stat-value">82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">7.9/10</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Rate</span>
+                                    <span class="stat-value">95%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Period</span>
+                                    <span class="stat-value">Last 30 days</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Recent Trends</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Week on week</span>
+                                    <span class="stat-value text-success">+2.1%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Month on month</span>
+                                    <span class="stat-value text-success">+4.3%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Highest scorer</span>
+                                    <span class="stat-value">Staff Helpfulness</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Improvement need</span>
+                                    <span class="stat-value text-warning">Wait Times</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">NPS Score</span>
+                                    <span class="stat-value">72</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="customer-segments" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Customer Segment Distribution</div>
+                            <div class="donut-container">
+                                <div class="donut-wrapper" id="donut-wrapper">
+                                    <svg class="donut-svg" viewBox="0 0 240 240" id="donut-svg"></svg>
+                                    <div class="donut-center-label" id="donut-center">
+                                        <div class="donut-center-value">17,200</div>
+                                        <div class="donut-center-name">Total</div>
+                                    </div>
+                                    <div class="donut-tooltip" id="donut-tooltip">
+                                        <div class="donut-tooltip-label"></div>
+                                        <div class="donut-tooltip-value"></div>
+                                    </div>
+                                </div>
+                                <div class="donut-legend">
+                                    <div class="legend-item" data-segment="0">
+                                        <div class="legend-dot" style="background: #009677;"></div>
+                                        <div class="legend-label">Premium Banking</div>
+                                        <div class="legend-percentage">30%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="1">
+                                        <div class="legend-dot" style="background: #007D63;"></div>
+                                        <div class="legend-label">Standard Banking</div>
+                                        <div class="legend-percentage">35%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="2">
+                                        <div class="legend-dot" style="background: #00654F;"></div>
+                                        <div class="legend-label">Youth Accounts</div>
+                                        <div class="legend-percentage">20%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="3">
+                                        <div class="legend-dot" style="background: #004D3B;"></div>
+                                        <div class="legend-label">Business Accounts</div>
+                                        <div class="legend-percentage">15%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Segment Insights</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Premium Avg Spend</span>
+                                    <span class="stat-value">R2,400</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Standard Avg Spend</span>
+                                    <span class="stat-value">R840</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Youth Satisfaction</span>
+                                    <span class="stat-value">8.2/10</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Business Retention</span>
+                                    <span class="stat-value">91%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Cross-sell Rate</span>
+                                    <span class="stat-value">43%</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Product Uptake</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Investment Products</span>
+                                    <span class="stat-value">67%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Insurance Products</span>
+                                    <span class="stat-value">54%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Lending Products</span>
+                                    <span class="stat-value">38%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Digital Banking</span>
+                                    <span class="stat-value">72%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Mobile App Users</span>
+                                    <span class="stat-value">61%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="product-feedback" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Product Satisfaction Ratings</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Home Loans</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 84%;">
+                                            <div class="bar-value">4.2</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right">4.2/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Savings Accounts</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 90%;">
+                                            <div class="bar-value">4.5</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right">4.5/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Credit Cards</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 76%;">
+                                            <div class="bar-value">3.8</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right">3.8/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Insurance</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 80%;">
+                                            <div class="bar-value">4.0</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right">4.0/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Investment Products</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 86%;">
+                                            <div class="bar-value">4.3</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right">4.3/5</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Digital Banking Feedback</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">App Usability</span>
+                                    <span class="stat-value">4.4/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Online Security</span>
+                                    <span class="stat-value">4.7/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Transaction Speed</span>
+                                    <span class="stat-value">4.6/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Customer Support</span>
+                                    <span class="stat-value">4.2/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Feature Completeness</span>
+                                    <span class="stat-value">4.3/5</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Fee Satisfaction</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Monthly Fees</span>
+                                    <span class="stat-value text-warning">3.1/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Transaction Fees</span>
+                                    <span class="stat-value text-warning">3.3/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Transparency</span>
+                                    <span class="stat-value">4.1/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Value for Money</span>
+                                    <span class="stat-value">3.8/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Fee Competitiveness</span>
+                                    <span class="stat-value">3.6/5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alerts-triggers" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Active Alerts & Triggers</div>
+                            <div class="alerts-scroll">
+                                <div class="alert-item critical">
+                                    <div class="alert-text">High churn rate in Youth segment — 12% decline from last quarter</div>
+                                    <div class="alert-meta"><span>Today</span><span class="alert-status">Action Required</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Credit Card satisfaction below threshold at 3.8/5 — feature review needed</div>
+                                    <div class="alert-meta"><span>2 days ago</span><span class="alert-status warning">Investigating</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Fee-related complaints up 18% — customer communication campaign recommended</div>
+                                    <div class="alert-meta"><span>3 days ago</span><span class="alert-status warning">Monitoring</span></div>
+                                </div>
+                                <div class="alert-item success">
+                                    <div class="alert-text">Investment product adoption at 67% — exceeds target, strong growth trajectory</div>
+                                    <div class="alert-meta"><span>1 day ago</span><span class="alert-status success">Positive</span></div>
+                                </div>
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Branch wait times increased 25% at Johannesburg CBD location — staffing escalation</div>
+                                    <div class="alert-meta"><span>4 days ago</span><span class="alert-status">Under Review</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Response Rate Trends</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Overall Rate</span>
+                                    <span class="stat-value">69.9%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Week on Week</span>
+                                    <span class="stat-value text-success">+3.2%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Month on Month</span>
+                                    <span class="stat-value text-success">+6.8%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Avg</span>
+                                    <span class="stat-value">94%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Bounce Rate</span>
+                                    <span class="stat-value">6.1%</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Active Triggers</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Active</span>
+                                    <span class="stat-value">8</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value text-danger">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Warning</span>
+                                    <span class="stat-value text-warning">3</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Positive</span>
+                                    <span class="stat-value text-success">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Resolution Avg</span>
+                                    <span class="stat-value">3.2 days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="regional-view" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Response Volume by Region</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Gauteng</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 85%;">
+                                            <div class="bar-value">6,800</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">6.8K</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Western Cape</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 62%;">
+                                            <div class="bar-value">4,200</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.2K</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">KwaZulu-Natal</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 53%;">
+                                            <div class="bar-value">3,600</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">3.6K</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Eastern Cape</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 31%;">
+                                            <div class="bar-value">2,100</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">2.1K</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Free State</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 21%;">
+                                            <div class="bar-value">1,400</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">1.4K</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Regional Highlights</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Region</span>
+                                    <span class="stat-value">Gauteng</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Gauteng Coverage</span>
+                                    <span class="stat-value">39.5%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Gauteng Satisfaction</span>
+                                    <span class="stat-value">8.1/10</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Western Cape Satisfaction</span>
+                                    <span class="stat-value">7.9/10</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Regional Balance</span>
+                                    <span class="stat-value">Expanding</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Growth Metrics</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Gauteng Growth</span>
+                                    <span class="stat-value text-success">+8.2%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Western Cape Growth</span>
+                                    <span class="stat-value text-success">+5.4%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">KZN Growth</span>
+                                    <span class="stat-value text-success">+4.1%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Regional Growth</span>
+                                    <span class="stat-value text-success">+5.4%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Emerging Region</span>
+                                    <span class="stat-value">Free State</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <div class="q-pills stagger">
-    <span class="q-pill">"How easy was it to sign up?"</span>
-    <span class="q-pill">"Would you recommend us?"</span>
-    <span class="q-pill">"What would you improve about the app?"</span>
-    <span class="q-pill">"How was your branch experience?"</span>
-  </div>
-</div>
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
 
-</div>
+        const tabInfo = {
+            'survey-overview': { title: 'Survey Overview', subtitle: 'Key metrics and response rates' },
+            'branch-experience': { title: 'Branch Experience', subtitle: 'Satisfaction metrics across locations' },
+            'customer-segments': { title: 'Customer Segments', subtitle: 'Segment breakdown and product uptake' },
+            'product-feedback': { title: 'Product Feedback', subtitle: 'Product satisfaction and fee sentiment' },
+            'alerts-triggers': { title: 'Alerts & Triggers', subtitle: 'Active alerts and monitoring status' },
+            'regional-view': { title: 'Regional View', subtitle: 'Regional performance and growth metrics' }
+        };
 
-<script>
-var slideNames = ['Introduction', 'Use Cases', 'How It Works', 'Competitive Edge', 'Dashboard'];
-var total = 5;
-var current = 0;
-var animating = false;
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
 
-// Build dots
-var dotsEl = document.getElementById('dots');
-for (var i = 0; i < total; i++) {
-  (function(idx) {
-    var d = document.createElement('button');
-    d.className = 'dot' + (idx === 0 ? ' active' : '');
-    d.onclick = function() { go(idx); };
-    dotsEl.appendChild(d);
-  })(i);
-}
+                // Animate header text out
+                headerTitle.classList.add('switching');
+                headerSubtitle.classList.add('switching');
 
-function go(idx) {
-  if (animating || idx === current || idx < 0 || idx >= total) return;
-  animating = true;
-  var prev = document.getElementById('s' + current);
-  var next = document.getElementById('s' + idx);
-  var dir = idx > current ? 1 : -1;
+                setTimeout(() => {
+                    // Switch tabs
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
 
-  // Exit current slide
-  prev.classList.remove('active');
-  prev.style.opacity = '0';
-  prev.style.transform = dir > 0 ? 'translateY(-30px)' : 'translateY(30px)';
+                    // Update header text
+                    const info = tabInfo[tabId];
+                    headerTitle.textContent = info.title;
+                    headerSubtitle.textContent = info.subtitle;
 
-  // Prepare next slide at starting position (no transition yet)
-  next.style.transition = 'none';
-  next.style.opacity = '0';
-  next.style.transform = dir > 0 ? 'translateY(30px)' : 'translateY(-30px)';
+                    // Animate header text in
+                    requestAnimationFrame(() => {
+                        headerTitle.classList.remove('switching');
+                        headerSubtitle.classList.remove('switching');
+                    });
+                }, 150);
+            });
+        });
 
-  // Force layout
-  next.offsetHeight;
+        // Build SVG donut chart with proper arc segments
+        (function() {
+            const svg = document.getElementById('donut-svg');
+            const tooltip = document.getElementById('donut-tooltip');
+            const centerLabel = document.getElementById('donut-center');
+            const tooltipLabel = tooltip.querySelector('.donut-tooltip-label');
+            const tooltipValue = tooltip.querySelector('.donut-tooltip-value');
+            const wrapper = document.getElementById('donut-wrapper');
 
-  // Now enable transition and animate in
-  next.style.transition = '';
-  next.classList.add('active');
-  next.style.opacity = '1';
-  next.style.transform = 'translateY(0)';
+            const cx = 120, cy = 120, outerR = 110, innerR = 68;
+            const segmentData = [
+                { name: 'Premium Banking', pct: 30, color: '#009677', count: '5,160', detail: 'High-value customers' },
+                { name: 'Standard Banking', pct: 35, color: '#007D63', count: '6,020', detail: 'Core customer base' },
+                { name: 'Youth Accounts', pct: 20, color: '#00654F', count: '3,440', detail: 'Younger demographic' },
+                { name: 'Business Accounts', pct: 15, color: '#004D3B', count: '2,580', detail: 'Enterprise clients' }
+            ];
 
-  setTimeout(function() {
-    // Clean up prev
-    prev.style.transform = '';
-    prev.style.opacity = '';
-    prev.style.transition = '';
-    // Clean up next (leave active class, clear inline styles)
-    next.style.transform = '';
-    next.style.opacity = '';
-    animating = false;
-  }, 480);
+            function polarToCartesian(cx, cy, r, angleDeg) {
+                const rad = (angleDeg - 90) * Math.PI / 180;
+                return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+            }
 
-  current = idx;
-  updateUI();
-}
+            function arcPath(cx, cy, outerR, innerR, startAngle, endAngle) {
+                const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
+                const outerEnd = polarToCartesian(cx, cy, outerR, endAngle);
+                const innerStart = polarToCartesian(cx, cy, innerR, endAngle);
+                const innerEnd = polarToCartesian(cx, cy, innerR, startAngle);
+                const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+                return [
+                    'M', outerStart.x, outerStart.y,
+                    'A', outerR, outerR, 0, largeArc, 1, outerEnd.x, outerEnd.y,
+                    'L', innerStart.x, innerStart.y,
+                    'A', innerR, innerR, 0, largeArc, 0, innerEnd.x, innerEnd.y,
+                    'Z'
+                ].join(' ');
+            }
 
-function updateUI() {
-  document.getElementById('slideCounter').textContent = (current + 1) + ' / ' + total;
-  document.getElementById('slideName').textContent = slideNames[current];
-  document.getElementById('prevBtn').disabled = current === 0;
-  document.getElementById('nextBtn').disabled = current === total - 1;
-  var allDots = dotsEl.querySelectorAll('.dot');
-  for (var i = 0; i < allDots.length; i++) {
-    allDots[i].className = 'dot' + (i === current ? ' active' : '');
-  }
-}
+            let currentAngle = 0;
+            const svgSegments = [];
 
-// Keyboard
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(current + 1); }
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(current - 1); }
-});
+            segmentData.forEach((seg, i) => {
+                const sliceAngle = (seg.pct / 100) * 360;
+                const startAngle = currentAngle;
+                const endAngle = currentAngle + sliceAngle;
+                const gap = 1.5;
 
-// Touch
-var tx = 0, ty = 0;
-document.addEventListener('touchstart', function(e) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
-document.addEventListener('touchend', function(e) {
-  var dx = e.changedTouches[0].clientX - tx;
-  var dy = e.changedTouches[0].clientY - ty;
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) { dx < 0 ? go(current + 1) : go(current - 1); }
-  else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 50) { dy < 0 ? go(current + 1) : go(current - 1); }
-}, { passive: true });
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', arcPath(cx, cy, outerR, innerR, startAngle + gap/2, endAngle - gap/2));
+                path.setAttribute('fill', seg.color);
+                path.setAttribute('class', 'donut-svg-segment');
+                path.setAttribute('data-index', i);
+                svg.appendChild(path);
+                svgSegments.push(path);
 
-// Scroll/wheel
-var wheelTimeout;
-document.addEventListener('wheel', function(e) {
-  e.preventDefault();
-  if (wheelTimeout) return;
-  wheelTimeout = setTimeout(function() { wheelTimeout = null; }, 600);
-  e.deltaY > 0 ? go(current + 1) : go(current - 1);
-}, { passive: false });
-</script>
+                path.addEventListener('mouseenter', () => {
+                    tooltipLabel.textContent = seg.name + '  —  ' + seg.pct + '%';
+                    tooltipValue.textContent = seg.count + ' customers  |  ' + seg.detail;
+                    tooltip.classList.add('visible');
+                    centerLabel.querySelector('.donut-center-value').textContent = seg.pct + '%';
+                    centerLabel.querySelector('.donut-center-name').textContent = seg.name;
+                });
+
+                path.addEventListener('mousemove', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - rect.left + 16) + 'px';
+                    tooltip.style.top = (e.clientY - rect.top - 20) + 'px';
+                });
+
+                path.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                    centerLabel.querySelector('.donut-center-value').textContent = '17,200';
+                    centerLabel.querySelector('.donut-center-name').textContent = 'Total';
+                });
+
+                currentAngle = endAngle;
+            });
+
+            // Legend hover
+            const legendItems = document.querySelectorAll('.legend-item[data-segment]');
+            legendItems.forEach((item, i) => {
+                item.addEventListener('mouseenter', () => {
+                    const seg = segmentData[i];
+                    centerLabel.querySelector('.donut-center-value').textContent = seg.pct + '%';
+                    centerLabel.querySelector('.donut-center-name').textContent = seg.name;
+                    if (svgSegments[i]) svgSegments[i].style.transform = 'scale(1.05)';
+                    if (svgSegments[i]) svgSegments[i].style.filter = 'brightness(1.08)';
+                });
+                item.addEventListener('mouseleave', () => {
+                    centerLabel.querySelector('.donut-center-value').textContent = '17,200';
+                    centerLabel.querySelector('.donut-center-name').textContent = 'Total';
+                    if (svgSegments[i]) svgSegments[i].style.transform = '';
+                    if (svgSegments[i]) svgSegments[i].style.filter = '';
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
