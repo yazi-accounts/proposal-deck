@@ -1,0 +1,1294 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber Eats Yazi Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='64' height='64' rx='14' fill='%2306C167'/%3E%3Ctext x='32' y='34' text-anchor='middle' font-size='16' font-weight='700' fill='white' font-family='-apple-system,BlinkMacSystemFont,sans-serif' letter-spacing='2'%3EUE%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
+            color: #1A1D1F;
+            background: #F5F5F7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #root {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 0;
+        }
+
+        .sidebar-logo-text {
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            color: #1A1D1F;
+        }
+
+        .sidebar-logo-text .uber {
+            font-weight: 400;
+        }
+
+        .sidebar-logo-text .eats {
+            font-weight: 700;
+            color: #06C167;
+            margin-left: 2px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #AEAEB2;
+            margin-bottom: 28px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            margin-bottom: 24px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(6, 193, 103, 0.04);
+        }
+
+        .nav-item.active {
+            background: rgba(6, 193, 103, 0.08);
+            color: #06C167;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            font-size: 11px;
+            color: #AEAEB2;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 28px 40px 16px 40px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            background: #FFFFFF;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: #86868B;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-title.switching,
+        .header-subtitle.switching {
+            opacity: 0;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px 40px 24px 40px;
+            overflow: hidden;
+            background: #F5F5F7;
+        }
+
+        .tab-content {
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            animation: tabEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .tab-content > * {
+            width: 100%;
+        }
+
+        @keyframes tabEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.99);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .tab-content.active .card,
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card {
+            animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+        .tab-content.active .col-right > .card:nth-child(1),
+        .tab-content.active .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .tab-content.active .col-right > .card:nth-child(2),
+        .tab-content.active .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+        .tab-content.active .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+        .tab-content.active .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+        .tab-content.active .kpi-card:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-content.active .bar-fill {
+            animation: barGrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes barGrow {
+            from { max-width: 0; }
+            to { max-width: 100%; }
+        }
+
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: #86868B;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 20px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .col-left {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-left.card {
+            height: 100%;
+        }
+
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .col-right > .card {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .overview-wrapper {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(145deg, rgba(6, 193, 103, 0.04) 0%, rgba(6, 193, 103, 0.07) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1.5px solid #06C167;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #06C167;
+            margin-bottom: 12px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #06C167;
+            margin-bottom: 4px;
+        }
+
+        .kpi-subtext {
+            font-size: 11px;
+            font-weight: 400;
+            color: #AEAEB2;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .bar-label-wide {
+            min-width: 160px;
+        }
+
+        .bar-container {
+            flex: 1;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #06C167;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .bar-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFFFFF;
+            white-space: nowrap;
+        }
+
+        .bar-value-right {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1A1D1F;
+            min-width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .list-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .list-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .donut-container {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .donut-wrapper {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            flex-shrink: 0;
+        }
+
+        .donut-svg {
+            width: 240px;
+            height: 240px;
+        }
+
+        .donut-svg-segment {
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+            transform-origin: 120px 120px;
+        }
+
+        .donut-svg-segment:hover {
+            transform: scale(1.05);
+            filter: brightness(1.08);
+        }
+
+        .donut-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .donut-center-value {
+            font-size: 34px;
+            font-weight: 700;
+            color: #1A1D1F;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .donut-center-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: #86868B;
+            margin-top: 5px;
+        }
+
+        .donut-tooltip {
+            position: absolute;
+            background: #000000;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: translateY(4px);
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .donut-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .donut-tooltip-label {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .donut-tooltip-value {
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+        }
+
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(0,0,0,0.03);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-label {
+            flex: 1;
+            color: #1A1D1F;
+            font-weight: 500;
+        }
+
+        .legend-percentage {
+            font-weight: 700;
+            color: #1A1D1F;
+            font-size: 14px;
+        }
+
+        .accent-box {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+
+        .accent-box.success {
+            background: rgba(6, 193, 103, 0.06);
+            border: 1px solid rgba(6, 193, 103, 0.1);
+            color: #1A1D1F;
+        }
+
+        .alert-item {
+            border-left: 3px solid #06C167;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(6, 193, 103, 0.02);
+        }
+
+        .alert-item.critical {
+            border-left-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.02);
+        }
+
+        .alert-item.warning {
+            border-left-color: #FF9500;
+            background: rgba(255, 149, 0, 0.02);
+        }
+
+        .alert-item.success {
+            border-left-color: #34C759;
+            background: rgba(52, 199, 89, 0.02);
+        }
+
+        .alert-text {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 400;
+        }
+
+        .alert-status {
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #FF3B30;
+        }
+
+        .alert-status.warning {
+            color: #FF9500;
+        }
+
+        .alert-status.success {
+            color: #34C759;
+        }
+
+        .alerts-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .text-muted { color: #86868B; }
+        .text-tertiary { color: #AEAEB2; }
+        .text-success { color: #34C759; }
+        .text-warning { color: #FF9500; }
+        .text-danger { color: #FF3B30; }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-text">
+                    <span class="uber">Uber</span><span class="eats">Eats</span>
+                </div>
+            </div>
+            <div class="sidebar-subtitle">Yazi Dashboard</div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-tab="survey-overview">Survey Overview</div>
+                <div class="nav-item" data-tab="delivery-experience">Delivery Experience</div>
+                <div class="nav-item" data-tab="customer-segments">Customer Segments</div>
+                <div class="nav-item" data-tab="restaurant-feedback">Restaurant Feedback</div>
+                <div class="nav-item" data-tab="alerts-triggers">Alerts & Triggers</div>
+                <div class="nav-item" data-tab="regional-view">Regional View</div>
+            </div>
+            <div class="sidebar-footer">Powered by Yazi</div>
+        </div>
+
+        <div class="main">
+            <div class="header">
+                <div class="header-title" id="header-title">Survey Overview</div>
+                <div class="header-subtitle" id="header-subtitle">Key metrics and response rates</div>
+            </div>
+
+            <div class="content">
+                <div id="survey-overview" class="tab-content active">
+                    <div class="overview-wrapper">
+                        <div class="overview-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value">18,200</div>
+                                <div class="kpi-label">Total Surveys Sent</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">13,650</div>
+                                <div class="kpi-label">Completed Responses</div>
+                                <div class="kpi-subtext">75.0% rate</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">1.8</div>
+                                <div class="kpi-label">Avg Completion Time</div>
+                                <div class="kpi-subtext">minutes</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">8</div>
+                                <div class="kpi-label">Active Campaigns</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">85</div>
+                                <div class="kpi-label">WhatsApp Open Rate</div>
+                                <div class="kpi-subtext">percent</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">2,340</div>
+                                <div class="kpi-label">This Month's Responses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="delivery-experience" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Delivery Satisfaction Metrics</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">On-Time Delivery</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%;">
+                                            <div class="bar-value">88%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">88%</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Order Accuracy</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 92%;">
+                                            <div class="bar-value">92%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">92%</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Food Temperature</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 85%;">
+                                            <div class="bar-value">85%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">85%</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Packaging Quality</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 90%;">
+                                            <div class="bar-value">90%</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">90%</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Delivery Speed Rating</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 86%;">
+                                            <div class="bar-value">4.3/5</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.3/5</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Survey Stats</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">4.4/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Responses This Month</span>
+                                    <span class="stat-value">2,140</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Rate</span>
+                                    <span class="stat-value">74.8%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Response Time</span>
+                                    <span class="stat-value">1.9 min</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Recent Trends</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Satisfaction Trend</span>
+                                    <span class="stat-value text-success">+0.2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">On-Time Rate</span>
+                                    <span class="stat-value text-success">+2.1%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Accuracy Trend</span>
+                                    <span class="stat-value">-0.3%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Speed Rating</span>
+                                    <span class="stat-value text-success">+0.1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="customer-segments" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Customer Segment Breakdown</div>
+                            <div class="donut-container">
+                                <div class="donut-wrapper" id="donut-wrapper">
+                                    <svg class="donut-svg" viewBox="0 0 240 240" id="donut-svg"></svg>
+                                    <div class="donut-center-label" id="donut-center">
+                                        <div class="donut-center-value">13,650</div>
+                                        <div class="donut-center-name">Total</div>
+                                    </div>
+                                    <div class="donut-tooltip" id="donut-tooltip">
+                                        <div class="donut-tooltip-label"></div>
+                                        <div class="donut-tooltip-value"></div>
+                                    </div>
+                                </div>
+                                <div class="donut-legend">
+                                    <div class="legend-item" data-segment="0">
+                                        <div class="legend-dot" style="background: #06C167;"></div>
+                                        <div class="legend-label">Power Users</div>
+                                        <div class="legend-percentage">35%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="1">
+                                        <div class="legend-dot" style="background: #04A154;"></div>
+                                        <div class="legend-label">Weekly Orderers</div>
+                                        <div class="legend-percentage">28%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="2">
+                                        <div class="legend-dot" style="background: #038842;"></div>
+                                        <div class="legend-label">Monthly Users</div>
+                                        <div class="legend-percentage">22%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="3">
+                                        <div class="legend-dot" style="background: #026F31;"></div>
+                                        <div class="legend-label">New Customers</div>
+                                        <div class="legend-percentage">15%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Segment Insights</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Power Users Orders</span>
+                                    <span class="stat-value">8.2/month</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Weekly Avg Spend</span>
+                                    <span class="stat-value">R287</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">New Retention Rate</span>
+                                    <span class="stat-value">68%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Churn Risk</span>
+                                    <span class="stat-value text-danger">12%</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Top Cuisines</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Fast Food</span>
+                                    <span class="stat-value">34%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Casual Dining</span>
+                                    <span class="stat-value">28%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Fine Dining</span>
+                                    <span class="stat-value">18%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Groceries/Other</span>
+                                    <span class="stat-value">20%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="restaurant-feedback" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Restaurant Quality Ratings</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Restaurant A</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 96%;">
+                                            <div class="bar-value">4.8</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.8</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Restaurant B</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 92%;">
+                                            <div class="bar-value">4.6</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.6</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Restaurant C</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 90%;">
+                                            <div class="bar-value">4.5</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Restaurant D</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 86%;">
+                                            <div class="bar-value">4.3</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.3</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Restaurant E</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 82%;">
+                                            <div class="bar-value">4.1</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.1</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Menu Performance</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Dish</span>
+                                    <span class="stat-value">Burger Special</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Orders/week</span>
+                                    <span class="stat-value">284</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">4.7/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Repeat Rate</span>
+                                    <span class="stat-value">64%</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Pricing Feedback</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Value Perception</span>
+                                    <span class="stat-value">4.2/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Willing to Pay More</span>
+                                    <span class="stat-value">22%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Price Complaint</span>
+                                    <span class="stat-value">18%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Order Value</span>
+                                    <span class="stat-value">R245</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alerts-triggers" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Active Alerts</div>
+                            <div class="alerts-scroll">
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Delivery satisfaction dropped below 4.0 in Central region</div>
+                                    <div class="alert-meta"><span>2 hours ago</span><span class="alert-status">Action Required</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Order accuracy declining - 3 mismatched orders this week from Restaurant B</div>
+                                    <div class="alert-meta"><span>Today</span><span class="alert-status warning">Monitoring</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">High churn risk detected in North suburbs segment</div>
+                                    <div class="alert-meta"><span>1 day ago</span><span class="alert-status warning">Review Segment</span></div>
+                                </div>
+                                <div class="alert-item success">
+                                    <div class="alert-text">On-time delivery improved +2.1% week-over-week</div>
+                                    <div class="alert-meta"><span>3 hours ago</span><span class="alert-status success">Positive Trend</span></div>
+                                </div>
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Food temperature complaints increased 15% - packaging issue detected</div>
+                                    <div class="alert-meta"><span>4 hours ago</span><span class="alert-status">Under Review</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Alert Summary</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total</span>
+                                    <span class="stat-value">5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value text-danger">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Warning</span>
+                                    <span class="stat-value text-warning">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Positive</span>
+                                    <span class="stat-value text-success">1</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Active Triggers</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Churn Risk Monitors</span>
+                                    <span class="stat-value">3</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Quality Thresholds</span>
+                                    <span class="stat-value">6</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Rate Targets</span>
+                                    <span class="stat-value">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Region Alerts</span>
+                                    <span class="stat-value">4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="regional-view" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Regional Order Volume</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Johannesburg</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 100%;">
+                                            <div class="bar-value">4,200</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4,200</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Cape Town</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 74%;">
+                                            <div class="bar-value">3,100</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">3,100</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Durban</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 57%;">
+                                            <div class="bar-value">2,400</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">2,400</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Pretoria</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 43%;">
+                                            <div class="bar-value">1,800</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">1,800</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Port Elizabeth</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 29%;">
+                                            <div class="bar-value">1,200</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">1,200</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Regional Highlights</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Region</span>
+                                    <span class="stat-value">Johannesburg</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Fastest Growing</span>
+                                    <span class="stat-value">Durban</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Highest Satisfaction</span>
+                                    <span class="stat-value">Cape Town</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Needs Support</span>
+                                    <span class="stat-value">Port Elizabeth</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Growth Metrics</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Monthly Growth</span>
+                                    <span class="stat-value text-success">+8.2%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">New Surveys This Month</span>
+                                    <span class="stat-value">2,340</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Quality</span>
+                                    <span class="stat-value">76.3%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">YoY Growth Rate</span>
+                                    <span class="stat-value text-success">+24%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        const tabInfo = {
+            'survey-overview': { title: 'Survey Overview', subtitle: 'Key metrics and response rates' },
+            'delivery-experience': { title: 'Delivery Experience', subtitle: 'Satisfaction metrics and quality scores' },
+            'customer-segments': { title: 'Customer Segments', subtitle: 'Segment breakdown and cuisine preferences' },
+            'restaurant-feedback': { title: 'Restaurant Feedback', subtitle: 'Quality ratings and menu performance' },
+            'alerts-triggers': { title: 'Alerts & Triggers', subtitle: 'Active alerts and monitoring systems' },
+            'regional-view': { title: 'Regional View', subtitle: 'Regional performance and growth metrics' }
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
+
+                // Animate header text out
+                headerTitle.classList.add('switching');
+                headerSubtitle.classList.add('switching');
+
+                setTimeout(() => {
+                    // Switch tabs
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+
+                    // Update header text
+                    const info = tabInfo[tabId];
+                    headerTitle.textContent = info.title;
+                    headerSubtitle.textContent = info.subtitle;
+
+                    // Animate header text in
+                    requestAnimationFrame(() => {
+                        headerTitle.classList.remove('switching');
+                        headerSubtitle.classList.remove('switching');
+                    });
+                }, 150);
+            });
+        });
+
+        // Build SVG donut chart with proper arc segments
+        (function() {
+            const svg = document.getElementById('donut-svg');
+            const tooltip = document.getElementById('donut-tooltip');
+            const centerLabel = document.getElementById('donut-center');
+            const tooltipLabel = tooltip.querySelector('.donut-tooltip-label');
+            const tooltipValue = tooltip.querySelector('.donut-tooltip-value');
+            const wrapper = document.getElementById('donut-wrapper');
+
+            const cx = 120, cy = 120, outerR = 110, innerR = 68;
+            const segmentData = [
+                { name: 'Power Users', pct: 35, color: '#06C167', count: '4,778', detail: '5+ orders/week' },
+                { name: 'Weekly Orderers', pct: 28, color: '#04A154', count: '3,822', detail: '2-4 orders/week' },
+                { name: 'Monthly Users', pct: 22, color: '#038842', count: '3,003', detail: '1-3 orders/month' },
+                { name: 'New Customers', pct: 15, color: '#026F31', count: '2,047', detail: '<1 order/month' }
+            ];
+
+            function polarToCartesian(cx, cy, r, angleDeg) {
+                const rad = (angleDeg - 90) * Math.PI / 180;
+                return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+            }
+
+            function arcPath(cx, cy, outerR, innerR, startAngle, endAngle) {
+                const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
+                const outerEnd = polarToCartesian(cx, cy, outerR, endAngle);
+                const innerStart = polarToCartesian(cx, cy, innerR, endAngle);
+                const innerEnd = polarToCartesian(cx, cy, innerR, startAngle);
+                const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+                return [
+                    'M', outerStart.x, outerStart.y,
+                    'A', outerR, outerR, 0, largeArc, 1, outerEnd.x, outerEnd.y,
+                    'L', innerStart.x, innerStart.y,
+                    'A', innerR, innerR, 0, largeArc, 0, innerEnd.x, innerEnd.y,
+                    'Z'
+                ].join(' ');
+            }
+
+            let currentAngle = 0;
+            const svgSegments = [];
+
+            segmentData.forEach((seg, i) => {
+                const sliceAngle = (seg.pct / 100) * 360;
+                const startAngle = currentAngle;
+                const endAngle = currentAngle + sliceAngle;
+                const gap = 1.5;
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', arcPath(cx, cy, outerR, innerR, startAngle + gap/2, endAngle - gap/2));
+                path.setAttribute('fill', seg.color);
+                path.setAttribute('class', 'donut-svg-segment');
+                path.setAttribute('data-index', i);
+                svg.appendChild(path);
+                svgSegments.push(path);
+
+                path.addEventListener('mouseenter', () => {
+                    tooltipLabel.textContent = seg.name + '  —  ' + seg.pct + '%';
+                    tooltipValue.textContent = seg.count + ' customers  |  ' + seg.detail;
+                    tooltip.classList.add('visible');
+                    centerLabel.querySelector('.donut-center-value').textContent = seg.pct + '%';
+                    centerLabel.querySelector('.donut-center-name').textContent = seg.name;
+                });
+
+                path.addEventListener('mousemove', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - rect.left + 16) + 'px';
+                    tooltip.style.top = (e.clientY - rect.top - 20) + 'px';
+                });
+
+                path.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                    centerLabel.querySelector('.donut-center-value').textContent = '13,650';
+                    centerLabel.querySelector('.donut-center-name').textContent = 'Total';
+                });
+
+                currentAngle = endAngle;
+            });
+
+            // Legend hover
+            const legendItems = document.querySelectorAll('.legend-item[data-segment]');
+            legendItems.forEach((item, i) => {
+                item.addEventListener('mouseenter', () => {
+                    const seg = segmentData[i];
+                    centerLabel.querySelector('.donut-center-value').textContent = seg.pct + '%';
+                    centerLabel.querySelector('.donut-center-name').textContent = seg.name;
+                    if (svgSegments[i]) svgSegments[i].style.transform = 'scale(1.05)';
+                    if (svgSegments[i]) svgSegments[i].style.filter = 'brightness(1.08)';
+                });
+                item.addEventListener('mouseleave', () => {
+                    centerLabel.querySelector('.donut-center-value').textContent = '13,650';
+                    centerLabel.querySelector('.donut-center-name').textContent = 'Total';
+                    if (svgSegments[i]) svgSegments[i].style.transform = '';
+                    if (svgSegments[i]) svgSegments[i].style.filter = '';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
