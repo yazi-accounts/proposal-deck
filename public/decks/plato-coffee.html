@@ -1,0 +1,1497 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plato Coffee Yazi Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
+            color: #1D1D1F;
+            background: #F5F5F7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #root {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 0;
+        }
+
+        .sidebar-logo svg {
+            width: 140px;
+            height: auto;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #AEAEB2;
+            margin-bottom: 28px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            margin-bottom: 24px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1D1D1F;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(61, 90, 71, 0.04);
+        }
+
+        .nav-item.active {
+            background: rgba(61, 90, 71, 0.08);
+            color: #3D5A47;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            font-size: 11px;
+            color: #AEAEB2;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 28px 40px 16px 40px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            background: #FFFFFF;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1D1D1F;
+            margin-bottom: 6px;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: #86868B;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-title.switching,
+        .header-subtitle.switching {
+            opacity: 0;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px 40px 24px 40px;
+            overflow: hidden;
+            background: #F5F5F7;
+        }
+
+        .tab-content {
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            animation: tabEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .tab-content > * {
+            width: 100%;
+        }
+
+        @keyframes tabEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.99);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .tab-content.active .card,
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card {
+            animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+        .tab-content.active .col-right > .card:nth-child(1),
+        .tab-content.active .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .tab-content.active .col-right > .card:nth-child(2),
+        .tab-content.active .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+        .tab-content.active .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+        .tab-content.active .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+        .tab-content.active .kpi-card:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-content.active .bar-fill {
+            animation: barGrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes barGrow {
+            from { max-width: 0; }
+            to { max-width: 100%; }
+        }
+
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: #86868B;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 20px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .col-left {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-left.card {
+            height: 100%;
+        }
+
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .col-right > .card {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .overview-wrapper {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(145deg, rgba(61, 90, 71, 0.04) 0%, rgba(61, 90, 71, 0.07) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1.5px solid #3D5A47;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #3D5A47;
+            margin-bottom: 12px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3D5A47;
+            margin-bottom: 4px;
+        }
+
+        .kpi-subtext {
+            font-size: 11px;
+            font-weight: 400;
+            color: #AEAEB2;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1D1D1F;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .bar-label-wide {
+            min-width: 160px;
+        }
+
+        .bar-container {
+            flex: 1;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #3D5A47;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .bar-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFFFFF;
+            white-space: nowrap;
+        }
+
+        .bar-value-right {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1D1D1F;
+            min-width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-container-secondary {
+            height: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #1D1D1F;
+            font-weight: 600;
+        }
+
+        .list-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .list-value {
+            color: #1D1D1F;
+            font-weight: 600;
+        }
+
+        .list-value.rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(61, 90, 71, 0.1);
+            color: #3D5A47;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+        }
+
+        .alert-item {
+            border-left: 3px solid #3D5A47;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(61, 90, 71, 0.02);
+        }
+
+        .alert-item.critical {
+            border-left-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.02);
+        }
+
+        .alert-item.warning {
+            border-left-color: #FF9500;
+            background: rgba(255, 149, 0, 0.02);
+        }
+
+        .alert-item.success {
+            border-left-color: #34C759;
+            background: rgba(52, 199, 89, 0.02);
+        }
+
+        .alert-text {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #1D1D1F;
+            margin-bottom: 6px;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 400;
+        }
+
+        .alert-status {
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #FF3B30;
+        }
+
+        .alert-status.warning {
+            color: #FF9500;
+        }
+
+        .alert-status.success {
+            color: #34C759;
+        }
+
+        .donut-container {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .donut-wrapper {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            flex-shrink: 0;
+        }
+
+        .donut-svg {
+            width: 240px;
+            height: 240px;
+        }
+
+        .donut-svg-segment {
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+            transform-origin: 120px 120px;
+        }
+
+        .donut-svg-segment:hover {
+            transform: scale(1.05);
+            filter: brightness(1.08);
+        }
+
+        .donut-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .donut-center-value {
+            font-size: 34px;
+            font-weight: 700;
+            color: #1D1D1F;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .donut-center-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: #86868B;
+            margin-top: 5px;
+        }
+
+        .donut-tooltip {
+            position: absolute;
+            background: #1D1D1F;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: translateY(4px);
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .donut-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .donut-tooltip-label {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .donut-tooltip-value {
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+        }
+
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(0,0,0,0.03);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-label {
+            flex: 1;
+            color: #1D1D1F;
+            font-weight: 500;
+        }
+
+        .legend-percentage {
+            font-weight: 700;
+            color: #1D1D1F;
+            font-size: 14px;
+        }
+
+        .accent-box {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+
+        .accent-box.success {
+            background: rgba(52, 199, 89, 0.06);
+            border: 1px solid rgba(52, 199, 89, 0.1);
+            color: #1D1D1F;
+        }
+
+        .accent-box.warning {
+            background: rgba(255, 149, 0, 0.06);
+            border: 1px solid rgba(255, 149, 0, 0.1);
+            color: #1D1D1F;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            align-content: center;
+        }
+
+        .stat-box {
+            background: rgba(61, 90, 71, 0.02);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1D1D1F;
+            margin-bottom: 4px;
+        }
+
+        .stat-box-label {
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .bullet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bullet-item {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1D1D1F;
+            font-weight: 500;
+        }
+
+        .bullet-item::before {
+            content: "− ";
+            color: #3D5A47;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .comparison-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .comparison-metric-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1D1D1F;
+        }
+
+        .comparison-bars {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .comparison-bar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .bar-type {
+            font-size: 10px;
+            color: #AEAEB2;
+            font-weight: 500;
+        }
+
+        .bar-container-comparison {
+            height: 22px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill-comparison {
+            height: 100%;
+            background: #3D5A47;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: 5px;
+        }
+
+        .bar-fill-network {
+            background: rgba(61, 90, 71, 0.25);
+        }
+
+        .bar-value-comparison {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1D1D1F;
+            margin-top: 2px;
+        }
+
+        .churn-alert {
+            background: rgba(255, 59, 48, 0.04);
+            border: 1px solid rgba(255, 59, 48, 0.08);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #1D1D1F;
+            margin-top: 12px;
+        }
+
+        /* Staggered card reveals handled by .tab-content.active rules */
+
+        .text-muted { color: #86868B; }
+        .text-tertiary { color: #AEAEB2; }
+        .text-success { color: #34C759; }
+        .text-warning { color: #FF9500; }
+        .text-danger { color: #FF3B30; }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <svg viewBox="0 0 200 76" xmlns="http://www.w3.org/2000/svg">
+                    <text x="100" y="40" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Inter', sans-serif" font-size="40" font-weight="700" fill="#2D3228" letter-spacing="4">PLATO</text>
+                    <rect x="152" y="5" width="22" height="3.5" rx="1" fill="#2D3228"/>
+                    <text x="100" y="64" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Inter', sans-serif" font-size="14" font-weight="500" fill="#2D3228" letter-spacing="8">COFFEE</text>
+                </svg>
+            </div>
+            <div class="sidebar-subtitle">Yazi Dashboard</div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-tab="survey-overview">Survey Overview</div>
+                <div class="nav-item" data-tab="store-feedback">Store Feedback</div>
+                <div class="nav-item" data-tab="customer-segments">Customer Segments</div>
+                <div class="nav-item" data-tab="product-testing">Product Testing</div>
+                <div class="nav-item" data-tab="alerts-triggers">Alerts & Triggers</div>
+                <div class="nav-item" data-tab="franchisee-view">Franchisee View</div>
+            </div>
+            <div class="sidebar-footer">Powered by Yazi</div>
+        </div>
+
+        <div class="main">
+            <div class="header">
+                <div class="header-title" id="header-title">Survey Overview</div>
+                <div class="header-subtitle" id="header-subtitle">Key metrics and response rates</div>
+            </div>
+
+            <div class="content">
+                <div id="survey-overview" class="tab-content active">
+                    <div class="overview-wrapper">
+                    <div class="overview-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-value">12,480</div>
+                            <div class="kpi-label">Total Surveys Sent</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-value">8,847</div>
+                            <div class="kpi-label">Completed Responses</div>
+                            <div class="kpi-subtext">70.9% rate</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-value">2.4</div>
+                            <div class="kpi-label">Avg Completion Time</div>
+                            <div class="kpi-subtext">minutes</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-value">6</div>
+                            <div class="kpi-label">Active Campaigns</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-value">82</div>
+                            <div class="kpi-label">WhatsApp Open Rate</div>
+                            <div class="kpi-subtext">percent</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-value">1,240</div>
+                            <div class="kpi-label">This Month's Responses</div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div id="store-feedback" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Quality Scores by Location</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Rosebank</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 94%;">
+                                            <div class="bar-value">4.7</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.8</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Stellenbosch</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 90%;">
+                                            <div class="bar-value">4.5</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.6</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Sandton</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%;">
+                                            <div class="bar-value">4.4</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">CT CBD</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 82%;">
+                                            <div class="bar-value">4.1</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.3</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Parktown</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 86%;">
+                                            <div class="bar-value">4.3</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.4</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Durban</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 76%; background: #FF9500;">
+                                            <div class="bar-value">3.8</div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-value-right text-muted">4.1</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Coffee Quality (primary) | Service Score (secondary)</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Franchisee Ranking</div>
+                                <div class="list-item">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="list-value rank">1</div>
+                                        <span class="list-label">Rosebank</span>
+                                    </div>
+                                    <div class="list-value">4.7</div>
+                                </div>
+                                <div class="list-item">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="list-value rank">2</div>
+                                        <span class="list-label">Stellenbosch</span>
+                                    </div>
+                                    <div class="list-value">4.5</div>
+                                </div>
+                                <div class="list-item">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="list-value rank">3</div>
+                                        <span class="list-label">Sandton</span>
+                                    </div>
+                                    <div class="list-value">4.4</div>
+                                </div>
+                                <div class="list-item">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="list-value rank">4</div>
+                                        <span class="list-label">Parktown</span>
+                                    </div>
+                                    <div class="list-value">4.3</div>
+                                </div>
+                                <div class="list-item">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="list-value rank">5</div>
+                                        <span class="list-label">CT CBD</span>
+                                    </div>
+                                    <div class="list-value">4.1</div>
+                                </div>
+                                <div class="list-item">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="list-value rank" style="background: rgba(255, 59, 48, 0.1); color: #FF3B30;">6</div>
+                                        <span class="list-label">Durban</span>
+                                        <span class="badge">Needs Attention</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Anomaly Alert</div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-size: 13px; font-weight: 500; line-height: 1.5; color: #1D1D1F;">Durban store coffee quality dropped 0.6 points in the last 30 days. Service scores down 0.4 — QC deployment recommended.</div>
+                                    <div style="font-size: 11px; color: #AEAEB2;">Flagged 2 days ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="customer-segments" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Customer Cohort Breakdown</div>
+                            <div class="donut-container">
+                                <div class="donut-wrapper" id="donut-wrapper">
+                                    <svg class="donut-svg" viewBox="0 0 240 240" id="donut-svg"></svg>
+                                    <div class="donut-center-label" id="donut-center">
+                                        <div class="donut-center-value">8,847</div>
+                                        <div class="donut-center-name">Total</div>
+                                    </div>
+                                    <div class="donut-tooltip" id="donut-tooltip">
+                                        <div class="donut-tooltip-label"></div>
+                                        <div class="donut-tooltip-value"></div>
+                                    </div>
+                                </div>
+                                <div class="donut-legend">
+                                    <div class="legend-item" data-segment="0">
+                                        <div class="legend-dot" style="background: #3D5A47;"></div>
+                                        <div class="legend-label">Loyal (5+/mo)</div>
+                                        <div class="legend-percentage">34%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="1">
+                                        <div class="legend-dot" style="background: #5FA66D;"></div>
+                                        <div class="legend-label">Regular (3-4/mo)</div>
+                                        <div class="legend-percentage">28%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="2">
+                                        <div class="legend-dot" style="background: #A6C49E;"></div>
+                                        <div class="legend-label">Occasional (1-2/mo)</div>
+                                        <div class="legend-percentage">24%</div>
+                                    </div>
+                                    <div class="legend-item" data-segment="3">
+                                        <div class="legend-dot" style="background: #FF9500;"></div>
+                                        <div class="legend-label">Churned</div>
+                                        <div class="legend-percentage">14%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="churn-alert">14% of previously active customers stopped visiting. Top reasons: moved area (32%), price (28%), quality inconsistency (22%)</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Loyal Customers</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg visits/month</span>
+                                    <span class="stat-value">12.4</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg spend/visit</span>
+                                    <span class="stat-value">R74</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top order</span>
+                                    <span class="stat-value">Oat flat</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Satisfaction</span>
+                                    <span class="stat-value">4.7/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Would recommend</span>
+                                    <span class="stat-value">94%</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">At-Risk Customers</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Previous visits</span>
+                                    <span class="stat-value">8.2/mo</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Current visits</span>
+                                    <span class="stat-value">0.4/mo</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Drop period</span>
+                                    <span class="stat-value">60 days</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Main reasons</span>
+                                    <span class="stat-value">Price, Moved</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Recovery potential</span>
+                                    <span class="stat-value">Medium</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="product-testing" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">New Product Launch Scores</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Single Origin Ethiopian</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 92%;"><div class="bar-value">4.6</div></div>
+                                    </div>
+                                    <div class="bar-value-right">4.6/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Oat Milk Collab</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%;"><div class="bar-value">4.4</div></div>
+                                    </div>
+                                    <div class="bar-value-right">4.4/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Matcha Latte</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 84%;"><div class="bar-value">4.2</div></div>
+                                    </div>
+                                    <div class="bar-value-right">4.2/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Cold Brew Nitro</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 82%;"><div class="bar-value">4.1</div></div>
+                                    </div>
+                                    <div class="bar-value-right">4.1/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Hazelnut Cortado</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 80%;"><div class="bar-value">4.0</div></div>
+                                    </div>
+                                    <div class="bar-value-right">4.0/5</div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label bar-label-wide">Honey Cinnamon</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 78%;"><div class="bar-value">3.9</div></div>
+                                    </div>
+                                    <div class="bar-value-right">3.9/5</div>
+                                </div>
+                            </div>
+                            <div class="accent-box success">Standout: Single Origin Ethiopian scored highest at 4.6/5 — 78% would order regularly</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+                                <div class="card-header">Product Loyalty Signals</div>
+                                <div style="font-size: 11px; font-weight: 600; color: #86868B; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 16px;">Would stop visiting if removed</div>
+                                <div style="display: flex; flex-direction: column; gap: 16px; flex: 1; justify-content: center;">
+                                    <div class="bar-item">
+                                        <div class="bar-label" style="min-width: 130px; font-size: 13px;">Oat milk options</div>
+                                        <div class="bar-container bar-container-secondary">
+                                            <div class="bar-fill" style="width: 84%;"><div class="bar-value" style="font-size: 11px;">42%</div></div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-item">
+                                        <div class="bar-label" style="min-width: 130px; font-size: 13px;">Single origin range</div>
+                                        <div class="bar-container bar-container-secondary">
+                                            <div class="bar-fill" style="width: 62%;"><div class="bar-value" style="font-size: 11px;">31%</div></div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-item">
+                                        <div class="bar-label" style="min-width: 130px; font-size: 13px;">Barista quality</div>
+                                        <div class="bar-container bar-container-secondary">
+                                            <div class="bar-fill" style="width: 56%;"><div class="bar-value" style="font-size: 11px;">28%</div></div>
+                                        </div>
+                                    </div>
+                                    <div class="bar-item">
+                                        <div class="bar-label" style="min-width: 130px; font-size: 13px;">Seasonal specials</div>
+                                        <div class="bar-container bar-container-secondary">
+                                            <div class="bar-fill" style="width: 36%;"><div class="bar-value" style="font-size: 11px;">18%</div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="flex: 1; display: flex; flex-direction: column; background: rgba(61, 90, 71, 0.04); border: 1px solid rgba(61, 90, 71, 0.08);">
+                                <div class="card-header">Latest Launch — Matcha Latte</div>
+                                <div class="stat-grid" style="flex: 1; align-content: center;">
+                                    <div class="stat-box">
+                                        <div class="stat-box-value">84%</div>
+                                        <div class="stat-box-label">Approval</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-box-value">68%</div>
+                                        <div class="stat-box-label">Would Reorder</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-box-value">Feb</div>
+                                        <div class="stat-box-label">Launch</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-box-value">+R12K</div>
+                                        <div class="stat-box-label">Revenue/Store</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alerts-triggers" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Active Alerts</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Durban quality dropped below 4.0 — QC notified</div>
+                                    <div class="alert-meta"><span>2 days ago</span><span class="alert-status">Action Required</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Sandton 18 churn risk customers (+6 from last week)</div>
+                                    <div class="alert-meta"><span>Today</span><span class="alert-status warning">Monitoring</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Survey fatigue Rosebank 2.3/month, threshold 2</div>
+                                    <div class="alert-meta"><span>5 days ago</span><span class="alert-status warning">Adjust Frequency</span></div>
+                                </div>
+                                <div class="alert-item success">
+                                    <div class="alert-text">Stellenbosch quality +0.3, positive 3-month trend</div>
+                                    <div class="alert-meta"><span>1 day ago</span><span class="alert-status success">Resolved</span></div>
+                                </div>
+                                <div class="alert-item critical">
+                                    <div class="alert-text">CT CBD service score -0.4 in 2 weeks, staffing issue</div>
+                                    <div class="alert-meta"><span>3 days ago</span><span class="alert-status">Under Review</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Alert Summary</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total</span>
+                                    <span class="stat-value">5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value text-danger">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Warning</span>
+                                    <span class="stat-value text-warning">2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Positive</span>
+                                    <span class="stat-value text-success">1</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Survey Fatigue Tracker</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Network avg</span>
+                                    <span class="stat-value">1.8</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Threshold</span>
+                                    <span class="stat-value">2.0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Stores above</span>
+                                    <span class="stat-value">1</span>
+                                </div>
+                                <div style="font-size: 11px; color: #AEAEB2; margin-top: 10px; line-height: 1.4;">Reduce survey frequency at high-frequency locations to maintain response quality.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="franchisee-view" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Store vs Network Comparison (Rosebank)</div>
+                            <div style="display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; justify-content: center;">
+                                <div class="comparison-metric">
+                                    <div class="comparison-metric-label">Coffee Quality</div>
+                                    <div class="comparison-bars">
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Store</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison" style="width: 94%;"></div></div>
+                                            <div class="bar-value-comparison">4.7</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Network</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison bar-fill-network" style="width: 90%;"></div></div>
+                                            <div class="bar-value-comparison">4.5</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-metric">
+                                    <div class="comparison-metric-label">Service Score</div>
+                                    <div class="comparison-bars">
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Store</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison" style="width: 92%;"></div></div>
+                                            <div class="bar-value-comparison">4.6</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Network</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison bar-fill-network" style="width: 88%;"></div></div>
+                                            <div class="bar-value-comparison">4.4</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-metric">
+                                    <div class="comparison-metric-label">Wait Time</div>
+                                    <div class="comparison-bars">
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Store</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison" style="width: 80%;"></div></div>
+                                            <div class="bar-value-comparison">4.0</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Network</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison bar-fill-network" style="width: 82%;"></div></div>
+                                            <div class="bar-value-comparison">4.1</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-metric">
+                                    <div class="comparison-metric-label">Cleanliness</div>
+                                    <div class="comparison-bars">
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Store</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison" style="width: 96%;"></div></div>
+                                            <div class="bar-value-comparison">4.8</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Network</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison bar-fill-network" style="width: 87%;"></div></div>
+                                            <div class="bar-value-comparison">4.35</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="comparison-metric">
+                                    <div class="comparison-metric-label">Product Range</div>
+                                    <div class="comparison-bars">
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Store</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison" style="width: 91%;"></div></div>
+                                            <div class="bar-value-comparison">4.55</div>
+                                        </div>
+                                        <div class="comparison-bar">
+                                            <div class="bar-type">Network</div>
+                                            <div class="bar-container-comparison"><div class="bar-fill-comparison bar-fill-network" style="width: 85%;"></div></div>
+                                            <div class="bar-value-comparison">4.25</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Store Scorecard</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Overall Score</span>
+                                    <span class="stat-value">4.6/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Rank</span>
+                                    <span class="stat-value">2 of 6</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Trend</span>
+                                    <span class="stat-value text-success">+0.2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Strongest</span>
+                                    <span class="stat-value">Coffee Quality</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Weakest</span>
+                                    <span class="stat-value">Wait Times</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Recommendations</div>
+                                <div class="bullet-list">
+                                    <div class="bullet-item">Maintain coffee quality standards — Rosebank is a top performer.</div>
+                                    <div class="bullet-item">Focus on wait time optimization — slight gap from network avg.</div>
+                                    <div class="bullet-item">Leverage cleanliness excellence in marketing initiatives.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        const tabInfo = {
+            'survey-overview': { title: 'Survey Overview', subtitle: 'Key metrics and response rates' },
+            'store-feedback': { title: 'Store Feedback', subtitle: 'Quality scores and franchisee performance' },
+            'customer-segments': { title: 'Customer Segments', subtitle: 'Cohort breakdown and loyalty insights' },
+            'product-testing': { title: 'Product Testing', subtitle: 'New product launch scores and feedback' },
+            'alerts-triggers': { title: 'Alerts & Triggers', subtitle: 'Active alerts and anomalies' },
+            'franchisee-view': { title: 'Franchisee View', subtitle: 'Store performance vs network average' }
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
+
+                // Animate header text out
+                headerTitle.classList.add('switching');
+                headerSubtitle.classList.add('switching');
+
+                setTimeout(() => {
+                    // Switch tabs
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+
+                    // Update header text
+                    const info = tabInfo[tabId];
+                    headerTitle.textContent = info.title;
+                    headerSubtitle.textContent = info.subtitle;
+
+                    // Animate header text in
+                    requestAnimationFrame(() => {
+                        headerTitle.classList.remove('switching');
+                        headerSubtitle.classList.remove('switching');
+                    });
+                }, 150);
+            });
+        });
+
+        // Build SVG donut chart with proper arc segments
+        (function() {
+            const svg = document.getElementById('donut-svg');
+            const tooltip = document.getElementById('donut-tooltip');
+            const centerLabel = document.getElementById('donut-center');
+            const tooltipLabel = tooltip.querySelector('.donut-tooltip-label');
+            const tooltipValue = tooltip.querySelector('.donut-tooltip-value');
+            const wrapper = document.getElementById('donut-wrapper');
+
+            const cx = 120, cy = 120, outerR = 110, innerR = 68;
+            const segmentData = [
+                { name: 'Loyal', pct: 34, color: '#3D5A47', count: '3,008', detail: '5+ visits/month' },
+                { name: 'Regular', pct: 28, color: '#5FA66D', count: '2,477', detail: '3-4 visits/month' },
+                { name: 'Occasional', pct: 24, color: '#A6C49E', count: '2,123', detail: '1-2 visits/month' },
+                { name: 'Churned', pct: 14, color: '#FF9500', count: '1,239', detail: 'Was 3+, now 0' }
+            ];
+
+            function polarToCartesian(cx, cy, r, angleDeg) {
+                const rad = (angleDeg - 90) * Math.PI / 180;
+                return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+            }
+
+            function arcPath(cx, cy, outerR, innerR, startAngle, endAngle) {
+                const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
+                const outerEnd = polarToCartesian(cx, cy, outerR, endAngle);
+                const innerStart = polarToCartesian(cx, cy, innerR, endAngle);
+                const innerEnd = polarToCartesian(cx, cy, innerR, startAngle);
+                const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+                return [
+                    'M', outerStart.x, outerStart.y,
+                    'A', outerR, outerR, 0, largeArc, 1, outerEnd.x, outerEnd.y,
+                    'L', innerStart.x, innerStart.y,
+                    'A', innerR, innerR, 0, largeArc, 0, innerEnd.x, innerEnd.y,
+                    'Z'
+                ].join(' ');
+            }
+
+            let currentAngle = 0;
+            const svgSegments = [];
+
+            segmentData.forEach((seg, i) => {
+                const sliceAngle = (seg.pct / 100) * 360;
+                const startAngle = currentAngle;
+                const endAngle = currentAngle + sliceAngle;
+                const gap = 1.5;
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', arcPath(cx, cy, outerR, innerR, startAngle + gap/2, endAngle - gap/2));
+                path.setAttribute('fill', seg.color);
+                path.setAttribute('class', 'donut-svg-segment');
+                path.setAttribute('data-index', i);
+                svg.appendChild(path);
+                svgSegments.push(path);
+
+                path.addEventListener('mouseenter', () => {
+                    tooltipLabel.textContent = seg.name + '  —  ' + seg.pct + '%';
+                    tooltipValue.textContent = seg.count + ' customers  |  ' + seg.detail;
+                    tooltip.classList.add('visible');
+                    centerLabel.querySelector('.donut-center-value').textContent = seg.pct + '%';
+                    centerLabel.querySelector('.donut-center-name').textContent = seg.name;
+                });
+
+                path.addEventListener('mousemove', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - rect.left + 16) + 'px';
+                    tooltip.style.top = (e.clientY - rect.top - 20) + 'px';
+                });
+
+                path.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                    centerLabel.querySelector('.donut-center-value').textContent = '8,847';
+                    centerLabel.querySelector('.donut-center-name').textContent = 'Total';
+                });
+
+                currentAngle = endAngle;
+            });
+
+            // Legend hover
+            const legendItems = document.querySelectorAll('.legend-item[data-segment]');
+            legendItems.forEach((item, i) => {
+                item.addEventListener('mouseenter', () => {
+                    const seg = segmentData[i];
+                    centerLabel.querySelector('.donut-center-value').textContent = seg.pct + '%';
+                    centerLabel.querySelector('.donut-center-name').textContent = seg.name;
+                    if (svgSegments[i]) svgSegments[i].style.transform = 'scale(1.05)';
+                    if (svgSegments[i]) svgSegments[i].style.filter = 'brightness(1.08)';
+                });
+                item.addEventListener('mouseleave', () => {
+                    centerLabel.querySelector('.donut-center-value').textContent = '8,847';
+                    centerLabel.querySelector('.donut-center-name').textContent = 'Total';
+                    if (svgSegments[i]) svgSegments[i].style.transform = '';
+                    if (svgSegments[i]) svgSegments[i].style.filter = '';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
