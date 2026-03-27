@@ -1,0 +1,1172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toyota South Africa Yazi Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='64' height='64' rx='14' fill='%23D1021E'/%3E%3Ctext x='32' y='34' text-anchor='middle' font-size='22' font-weight='700' fill='white' font-family='-apple-system,BlinkMacSystemFont,sans-serif' letter-spacing='6'%3ET%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+            color: #1A1D1F;
+            background: #F5F5F7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #root {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 0;
+        }
+
+        .sidebar-logo img {
+            width: 140px;
+            height: auto;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #AEAEB2;
+            margin-bottom: 28px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            margin-bottom: 24px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(209, 2, 30, 0.04);
+        }
+
+        .nav-item.active {
+            background: rgba(209, 2, 30, 0.08);
+            color: #D1021E;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            font-size: 11px;
+            color: #AEAEB2;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 28px 40px 16px 40px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            background: #FFFFFF;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: #86868B;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-title.switching,
+        .header-subtitle.switching {
+            opacity: 0;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px 40px 24px 40px;
+            overflow: hidden;
+            background: #F5F5F7;
+        }
+
+        .tab-content {
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            animation: tabEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .tab-content > * {
+            width: 100%;
+        }
+
+        @keyframes tabEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.99);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .tab-content.active .card,
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card {
+            animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+        .tab-content.active .col-right > .card:nth-child(1),
+        .tab-content.active .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .tab-content.active .col-right > .card:nth-child(2),
+        .tab-content.active .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+        .tab-content.active .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+        .tab-content.active .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+        .tab-content.active .kpi-card:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-content.active .bar-fill {
+            animation: barGrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes barGrow {
+            from { max-width: 0; }
+            to { max-width: 100%; }
+        }
+
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: #86868B;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 20px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .col-left {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-left.card {
+            height: 100%;
+        }
+
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .col-right > .card {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .overview-wrapper {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(145deg, rgba(209, 2, 30, 0.04) 0%, rgba(209, 2, 30, 0.07) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1.5px solid #D1021E;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #D1021E;
+            margin-bottom: 12px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #D1021E;
+            margin-bottom: 4px;
+        }
+
+        .kpi-subtext {
+            font-size: 11px;
+            font-weight: 400;
+            color: #AEAEB2;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .bar-label-wide {
+            min-width: 160px;
+        }
+
+        .bar-container {
+            flex: 1;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #D1021E;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .bar-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFFFFF;
+            white-space: nowrap;
+        }
+
+        .bar-value-right {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1A1D1F;
+            min-width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-container-secondary {
+            height: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .list-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .list-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .list-value.rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(209, 2, 30, 0.1);
+            color: #D1021E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+        }
+
+        .alert-item {
+            border-left: 3px solid #D1021E;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(209, 2, 30, 0.02);
+        }
+
+        .alert-item.critical {
+            border-left-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.02);
+        }
+
+        .alert-item.warning {
+            border-left-color: #FF9500;
+            background: rgba(255, 149, 0, 0.02);
+        }
+
+        .alert-item.success {
+            border-left-color: #34C759;
+            background: rgba(52, 199, 89, 0.02);
+        }
+
+        .alert-text {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 400;
+        }
+
+        .alert-status {
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #FF3B30;
+        }
+
+        .alert-status.warning {
+            color: #FF9500;
+        }
+
+        .alert-status.success {
+            color: #34C759;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            align-content: center;
+        }
+
+        .stat-box {
+            background: rgba(209, 2, 30, 0.02);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A1D1F;
+            margin-bottom: 4px;
+        }
+
+        .stat-box-label {
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .bullet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bullet-item {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1A1D1F;
+            font-weight: 500;
+        }
+
+        .bullet-item::before {
+            content: "− ";
+            color: #D1021E;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .accent-box {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+
+        .accent-box.success {
+            background: rgba(52, 199, 89, 0.06);
+            border: 1px solid rgba(52, 199, 89, 0.1);
+            color: #1A1D1F;
+        }
+
+        .accent-box.warning {
+            background: rgba(255, 149, 0, 0.06);
+            border: 1px solid rgba(255, 149, 0, 0.1);
+            color: #1A1D1F;
+        }
+
+        .text-muted { color: #86868B; }
+        .text-tertiary { color: #AEAEB2; }
+        .text-success { color: #34C759; }
+        .text-warning { color: #FF9500; }
+        .text-danger { color: #FF3B30; }
+
+        .alerts-scroll {
+            overflow-y: auto;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                    <img src="data:image/svg+xml,%3Csvg viewBox='0 0 300 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='150' y='45' text-anchor='middle' font-size='36' font-weight='700' fill='%23D1021E' font-family='-apple-system,BlinkMacSystemFont,sans-serif'%3ETOYOTA%3C/text%3E%3C/svg%3E" />
+            </div>
+            <div class="sidebar-subtitle">Customer Intelligence Dashboard</div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-tab="network-overview">Network Overview</div>
+                <div class="nav-item" data-tab="dealership-rankings">Dealership Rankings</div>
+                <div class="nav-item" data-tab="post-purchase">Post-Purchase</div>
+                <div class="nav-item" data-tab="post-service">Post-Service</div>
+                <div class="nav-item" data-tab="alerts-flags">Alerts & Flags</div>
+                <div class="nav-item" data-tab="regional-view">Regional View</div>
+            </div>
+            <div class="sidebar-footer">Powered by Yazi</div>
+        </div>
+
+        <div class="main">
+            <div class="header">
+                <div class="header-title" id="header-title">Network Overview</div>
+                <div class="header-subtitle" id="header-subtitle">Toyota South Africa dealership network performance</div>
+            </div>
+
+            <div class="content">
+                <div id="network-overview" class="tab-content active">
+                    <div class="overview-wrapper">
+                        <div class="overview-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value">126,400</div>
+                                <div class="kpi-label">Total Surveys Sent</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">81.2%</div>
+                                <div class="kpi-label">Response Rate</div>
+                                <div class="kpi-subtext">vs 12% phone avg</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">+68</div>
+                                <div class="kpi-label">Network NPS</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">4.4</div>
+                                <div class="kpi-label">Avg CSAT Score</div>
+                                <div class="kpi-subtext">out of 5</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">198</div>
+                                <div class="kpi-label">Active Dealerships</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">1.8</div>
+                                <div class="kpi-label">Avg Resolution Time</div>
+                                <div class="kpi-subtext">days</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dealership-rankings" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Top 10 Dealerships by NPS</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Menlyn</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 84%;">
+                                            <div class="bar-value">84</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Umhlanga</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 81%;">
+                                            <div class="bar-value">81</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Tygervalley</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 78%;">
+                                            <div class="bar-value">78</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Sandton</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 76%;">
+                                            <div class="bar-value">76</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Nelspruit</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 74%;">
+                                            <div class="bar-value">74</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Bloemfontein</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 71%;">
+                                            <div class="bar-value">71</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Midrand</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 69%;">
+                                            <div class="bar-value">69</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Strand</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 67%;">
+                                            <div class="bar-value">67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Pinetown</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 65%;">
+                                            <div class="bar-value">65</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Toyota Waterfront</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 62%;">
+                                            <div class="bar-value">62</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Bottom Performers Flagged</div>
+                                <div class="list-item">
+                                    <span class="list-label">Toyota Vereeniging</span>
+                                    <span class="list-value text-danger">28</span>
+                                </div>
+                                <div class="list-item">
+                                    <span class="list-label">Toyota Polokwane</span>
+                                    <span class="list-value text-danger">31</span>
+                                </div>
+                                <div class="list-item">
+                                    <span class="list-label">Toyota Welkom</span>
+                                    <span class="list-value text-warning">35</span>
+                                </div>
+                                <div class="list-item">
+                                    <span class="list-label">Toyota Rustenburg</span>
+                                    <span class="list-value text-warning">38</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Ranking Statistics</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Network Avg NPS</span>
+                                    <span class="stat-value">+68</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Median NPS</span>
+                                    <span class="stat-value">+64</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Std Deviation</span>
+                                    <span class="stat-value">14.2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Above Target</span>
+                                    <span class="stat-value text-success">82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Target NPS</span>
+                                    <span class="stat-value">50+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="post-purchase" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Post-Purchase Experience Metrics</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Test Drive Exp.</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 91%;">
+                                            <div class="bar-value">91%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Sales Consultant</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%;">
+                                            <div class="bar-value">88%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Vehicle Handover</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 85%;">
+                                            <div class="bar-value">85%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Documentation</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 78%;">
+                                            <div class="bar-value">81.2%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Finance Process</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 72%; background: #FF9500;">
+                                            <div class="bar-value">72%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Satisfaction % across network</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Purchase Survey Stats</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Surveys</span>
+                                    <span class="stat-value">12,400</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Rate</span>
+                                    <span class="stat-value">82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">4.4/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Time</span>
+                                    <span class="stat-value">1.4 min</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Key Insights</div>
+                                <div class="bullet-list">
+                                    <div class="bullet-item">Finance process is network weak point at 72%</div>
+                                    <div class="bullet-item">Handover experience improving +3.2% MoM</div>
+                                    <div class="bullet-item">Test drive scores consistently highest</div>
+                                    <div class="bullet-item">Documentation speed biggest complaint</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="post-service" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Post-Service Workshop Metrics</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Invoice Accuracy</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 89%;">
+                                            <div class="bar-value">89%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Service Quality</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 84%;">
+                                            <div class="bar-value">84%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Communication Updates</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 74%;">
+                                            <div class="bar-value">74%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Parts Availability</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 71%;">
+                                            <div class="bar-value">71%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Wait Time Satisfaction</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 68%; background: #FF9500;">
+                                            <div class="bar-value">68%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Customer satisfaction scores</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Service Survey Stats</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Surveys</span>
+                                    <span class="stat-value">36,200</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Rate</span>
+                                    <span class="stat-value">76%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">4.1/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Time</span>
+                                    <span class="stat-value">1.6 min</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Service Pain Points</div>
+                                <div class="bullet-list">
+                                    <div class="bullet-item">Wait times #1 complaint across network</div>
+                                    <div class="bullet-item">Communication during service needs improvement</div>
+                                    <div class="bullet-item">Parts delays affecting 3 provinces</div>
+                                    <div class="bullet-item">Invoice accuracy is a bright spot</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alerts-flags" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Active Alerts</div>
+                            <div class="alerts-scroll" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Toyota Vereeniging NPS dropped below 30 — 3rd consecutive month</div>
+                                    <div class="alert-meta"><span>2 days ago</span><span class="alert-status">Critical</span></div>
+                                </div>
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Post-service wait time complaints up 38% at Toyota Polokwane</div>
+                                    <div class="alert-meta"><span>1 day ago</span><span class="alert-status">Critical</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Finance process scores below 70% at 12 dealerships</div>
+                                    <div class="alert-meta"><span>Today</span><span class="alert-status warning">Warning</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Parts availability alerts in Limpopo and Mpumalanga regions</div>
+                                    <div class="alert-meta"><span>4 days ago</span><span class="alert-status warning">Warning</span></div>
+                                </div>
+                                <div class="alert-item success">
+                                    <div class="alert-text">Toyota Menlyn achieved highest NPS in network history: 86</div>
+                                    <div class="alert-meta"><span>3 days ago</span><span class="alert-status success">Success</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Alert Summary</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Active</span>
+                                    <span class="stat-value">18</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value text-danger">4</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Warning</span>
+                                    <span class="stat-value text-warning">9</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Positive</span>
+                                    <span class="stat-value text-success">5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Resolution</span>
+                                    <span class="stat-value">3.2 days</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Active Triggers</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">NPS Below 40</span>
+                                    <span class="stat-value">6 dealers</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">CSAT Below 3.5</span>
+                                    <span class="stat-value">4 dealers</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response < 60%</span>
+                                    <span class="stat-value">3 dealers</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Unresolved > 5 days</span>
+                                    <span class="stat-value">8 tickets</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="regional-view" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Survey Volume by Province</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Gauteng</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 92%;">
+                                            <div class="bar-value">42,800</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">KwaZulu-Natal</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 46%;">
+                                            <div class="bar-value">22,400</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Western Cape</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 43%;">
+                                            <div class="bar-value">19,200</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Mpumalanga</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 24%;">
+                                            <div class="bar-value">10,800</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Limpopo</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 16%;">
+                                            <div class="bar-value">8,200</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Survey responses across South African provinces</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Regional Performance</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Region</span>
+                                    <span class="stat-value text-success">Western Cape</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Region NPS</span>
+                                    <span class="stat-value">71</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Growth Leader</span>
+                                    <span class="stat-value text-success">KZN +12%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Best Response Rate</span>
+                                    <span class="stat-value">Gauteng 82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Needs Support</span>
+                                    <span class="stat-value text-warning">Limpopo</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Provincial NPS Rankings</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Western Cape</span>
+                                    <span class="stat-value">71</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Gauteng</span>
+                                    <span class="stat-value">64</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">KwaZulu-Natal</span>
+                                    <span class="stat-value">62</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Eastern Cape</span>
+                                    <span class="stat-value">58</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Mpumalanga</span>
+                                    <span class="stat-value">56</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Free State</span>
+                                    <span class="stat-value">52</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Limpopo</span>
+                                    <span class="stat-value text-warning">48</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        const tabInfo = {
+            'network-overview': { title: 'Network Overview', subtitle: 'Toyota South Africa dealership network performance' },
+            'dealership-rankings': { title: 'Dealership Rankings', subtitle: 'NPS and quality benchmarking across 198 dealerships' },
+            'post-purchase': { title: 'Post-Purchase Experience', subtitle: 'Sales and handover quality metrics' },
+            'post-service': { title: 'Post-Service Experience', subtitle: 'Workshop and service quality monitoring' },
+            'alerts-flags': { title: 'Alerts & Flags', subtitle: 'Network-wide performance alerts and anomalies' },
+            'regional-view': { title: 'Regional View', subtitle: 'Performance by province and geography' }
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
+
+                headerTitle.classList.add('switching');
+                headerSubtitle.classList.add('switching');
+
+                setTimeout(() => {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+
+                    const info = tabInfo[tabId];
+                    headerTitle.textContent = info.title;
+                    headerSubtitle.textContent = info.subtitle;
+
+                    requestAnimationFrame(() => {
+                        headerTitle.classList.remove('switching');
+                        headerSubtitle.classList.remove('switching');
+                    });
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
