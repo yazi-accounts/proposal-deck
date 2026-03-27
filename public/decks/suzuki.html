@@ -1,0 +1,1172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suzuki South Africa Yazi Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='64' height='64' rx='14' fill='%23003DA5'/%3E%3Ctext x='32' y='34' text-anchor='middle' font-size='22' font-weight='700' fill='white' font-family='-apple-system,BlinkMacSystemFont,sans-serif' letter-spacing='6'%3ES%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+            color: #1A1D1F;
+            background: #F5F5F7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #root {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #FFFFFF;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 0;
+        }
+
+        .sidebar-logo img {
+            width: 140px;
+            height: auto;
+        }
+
+        .sidebar-subtitle {
+            font-size: 10px;
+            color: #AEAEB2;
+            margin-bottom: 28px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            margin-bottom: 24px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 61, 165, 0.04);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 61, 165, 0.08);
+            color: #003DA5;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            font-size: 11px;
+            color: #AEAEB2;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 28px 40px 16px 40px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            background: #FFFFFF;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: #86868B;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-title.switching,
+        .header-subtitle.switching {
+            opacity: 0;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px 40px 24px 40px;
+            overflow: hidden;
+            background: #F5F5F7;
+        }
+
+        .tab-content {
+            height: 100%;
+            width: 100%;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            animation: tabEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .tab-content > * {
+            width: 100%;
+        }
+
+        @keyframes tabEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.99);
+                filter: blur(2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .tab-content.active .card,
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card {
+            animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        .tab-content.active .col-left,
+        .tab-content.active .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+        .tab-content.active .col-right > .card:nth-child(1),
+        .tab-content.active .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .tab-content.active .col-right > .card:nth-child(2),
+        .tab-content.active .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+        .tab-content.active .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+        .tab-content.active .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+        .tab-content.active .kpi-card:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-content.active .bar-fill {
+            animation: barGrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes barGrow {
+            from { max-width: 0; }
+            to { max-width: 100%; }
+        }
+
+        .card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: #86868B;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 20px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .col-left {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-left.card {
+            height: 100%;
+        }
+
+        .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .col-right > .card {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .overview-wrapper {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(145deg, rgba(0, 61, 165, 0.04) 0%, rgba(0, 61, 165, 0.07) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1.5px solid #003DA5;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #003DA5;
+            margin-bottom: 12px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #003DA5;
+            margin-bottom: 4px;
+        }
+
+        .kpi-subtext {
+            font-size: 11px;
+            font-weight: 400;
+            color: #AEAEB2;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1D1F;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .bar-label-wide {
+            min-width: 160px;
+        }
+
+        .bar-container {
+            flex: 1;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #003DA5;
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .bar-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFFFFF;
+            white-space: nowrap;
+        }
+
+        .bar-value-right {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1A1D1F;
+            min-width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-container-secondary {
+            height: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .list-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-label {
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .list-value {
+            color: #1A1D1F;
+            font-weight: 600;
+        }
+
+        .list-value.rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 61, 165, 0.1);
+            color: #003DA5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+        }
+
+        .alert-item {
+            border-left: 3px solid #003DA5;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(0, 61, 165, 0.02);
+        }
+
+        .alert-item.critical {
+            border-left-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.02);
+        }
+
+        .alert-item.warning {
+            border-left-color: #FF9500;
+            background: rgba(255, 149, 0, 0.02);
+        }
+
+        .alert-item.success {
+            border-left-color: #34C759;
+            background: rgba(52, 199, 89, 0.02);
+        }
+
+        .alert-text {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #1A1D1F;
+            margin-bottom: 6px;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 400;
+        }
+
+        .alert-status {
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #FF3B30;
+        }
+
+        .alert-status.warning {
+            color: #FF9500;
+        }
+
+        .alert-status.success {
+            color: #34C759;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            align-content: center;
+        }
+
+        .stat-box {
+            background: rgba(0, 61, 165, 0.02);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A1D1F;
+            margin-bottom: 4px;
+        }
+
+        .stat-box-label {
+            font-size: 11px;
+            color: #86868B;
+            font-weight: 500;
+        }
+
+        .bullet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+        }
+
+        .bullet-item {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1A1D1F;
+            font-weight: 500;
+        }
+
+        .bullet-item::before {
+            content: "− ";
+            color: #003DA5;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .accent-box {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+
+        .accent-box.success {
+            background: rgba(52, 199, 89, 0.06);
+            border: 1px solid rgba(52, 199, 89, 0.1);
+            color: #1A1D1F;
+        }
+
+        .accent-box.warning {
+            background: rgba(255, 149, 0, 0.06);
+            border: 1px solid rgba(255, 149, 0, 0.1);
+            color: #1A1D1F;
+        }
+
+        .text-muted { color: #86868B; }
+        .text-tertiary { color: #AEAEB2; }
+        .text-success { color: #34C759; }
+        .text-warning { color: #FF9500; }
+        .text-danger { color: #FF3B30; }
+
+        .alerts-scroll {
+            overflow-y: auto;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAFQCAYAAABJW4xyAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH6QQODzIgNYICnQAAOsVJREFUeNrt3Xl4VOX5//H3cyYLi4poXdmyQLVFsTZmBRW12ta9ttrFuuCGKySAQm3VqF1EIQHcKi6gre2v8rWtW92FCmQ1dcVqWRJExa0CKoEsc+7fH4mtWoGQmcw5M/m8rsurV9s4c+ZznnPuc8+c8zwgIilrNWMGrqL4742UTDXwlIhI6nKKQCQ1raBkdw97EhjV+T8tjuLGjaBqpdIRST26YhdJQWsoHuSwhZ8p5gAHR7B/rKLoHNPFvIg6dBEJtyaKvubjHgOGbuXPnvBpP2c49WuUmIg6dBEJmUaKCn28Z7dRzAGO8kh7pZGS89Sti6hDF5EQWUnRSQ73e6Dvdv6rj6ThnTeUpW8rRRF16CISaGdePNHhFnSjmAMc047/aiMl5ylJEXXoIhKA5Xw3M8L624Az4nNCsL+l4c4bQvVbSldEBV1EEuBNCnZtJfJn4JA4v/R6h5uaTdVcpSyigi4iPWgVYw6A6APAsJ57F7vfx7twOFXvKXGR8NNv6CJJZiVFp0J0ac8WcwD3fQ97bRUlpyl1EXXoIhInCxmbNpTNv3S4qQG8/YIoaReNYPH72hMiKugi0k3LKRwcwbsPKA5wM94z3IW5VN2vPSKigi4i26mR4kMN/gTsEZJNWtBG64X70PCB9o5IeOg3dJGQMnArKf6ZwdMhKuYAJ6eT8dIqio7TXhJRhy4iW7Gcg3eL0D4POCbkm7ogg+gFg6n7t/aaiAq6iHzGCkoO97DfAXsnySa/43DnZ1P1gPaeiAq6SK/XcRd76y8cdgXJ+XPYgnQ4fwjVH2pviqigi/RKqygZBnYvMDrJP8pasPE51DykvSqigi7Sq6yk5PsOux0YmEIf63eteBfty9KPtYdFVNBFUtoaivu2YdeBm5CiH3G1YefkUvOU9raICrpISlpFcQFwD7BPin9UA7t1E32mjmTRJ9rzIiroIilhIWPTsmidbNi1QHov+uhNPu7s4VQ9o1EgooIuktRWU/h1n8g9huX10ggMuH0TmZPVrYuooIskYxVzTRRPMJgOZCoRGh12VjY1ixSFiAq6SHJULoqyDDcfOFRp/G+33o+Nk/bkpY2KQ0QFXSTEXXnJuYbNBHZQIlu0Cty4HKqeVRQiKugiIevK8/c00m4HjlUaXeIDd/ShtWxvGpoVh4gKukgI2s2S08Bmk1qTxCTKP4Ezc6iuUxQiKugigXiD0Xu34d/s4ESlEZN2w2b6DLxqBI+2KA4RFXSRhPjMb+UzgB2VSNxOTMt83LhcquqVhogKukiPWs7okRGid4ArUhrq1kVU0EWSzHPkpe9K5iTDrkbPlSfCKz7+mcOpbVAUIiroInGxguISB7c7+LrSSHy3vpmPrxzJslbFIaKCLtItb5PXbxPpVzrcFCCiRALzsgdnZFH9vKIQUUEX2S4rGX20w78VGKo0QqHNsIp1tF1xEA1tikNEBV1kq9ZQvEsb/AY4T2mEkb3o8M7MpuoFZSGigi7yv2UCXCPFpwEzgN2USNi7dffrHAZd61gQVRyigi4iADRRfKAPNwPFSiOp1HrYuCxq/qkoRAVdpBdrZOzOxuarwV2EbnpLVpsdrjyLQTPUrYsKukgv85mv128AdlciKbFXayByZg5LX1cWooIu0gusYswBEL0ZGK00Us4mh7ta3bqooIuksHcY1X8j/a5wuMlAmhJJ6RNclU90XC51/1IaooIuklJdedFx4G4BBiuN3tatV93gOtZeF1FBF0lWKyn4qiPtJrAjlUavtdTwx+VSu1xRiAq6SNIV8rwBjvQrwE0A0pVIr/exwy7LouY2B6Y4RAVdJOQMvEaKfwpcD+yhROQLFkdx40ZQtVJRiAq6SEitoORwD78C3AFKQ7biI4e7NIuq29Wtiwq6SIispHCEw/sVcLLSkO3whE/7OcOpX6MoRAVdJEAds7y1XgF2MZCRZJv/LtifwJ0H9NHeDMx6h5VlUzNfUUiy8hSBJCsDbxXFpxstr4NNSsJivqCN1v1yqJkYwc8D6rRXA7Oz4eatovjR5RTqkUZRhy6SKCspPsJBBTAqCTf/HQ8uzKL6L5/9HxcyNi2L1smGXQ1kai8HZoPDXZZN1VxFISroIj1kOaNHphG93nBHJ+eXCtzlyJySzaL1W7lY2R+Y7+Cb2uOBesDRfn429e8oClFBF4mTFeQP8Uj7BXA2ybka2mrwz82h9smu/PFnuvVrSL6fElLJeoebqm5dVNBFYvQmBbu24F3qcBNJzpvGDLi9FW/Kviz9ePsvZEr2c9jd6tYD90ga3nlDWfq2ohAVdJHtsIyxO/SjZZLBZGCnJP4oZ+RQfU8sL/Aceem7kHEFMA3Ndhek94GLcqheoChEBV2kC8VrVzLHdd4YtmcKfKRmh7smHguDrKJwFHjzgQM1UgK1IEraRSNY/L6iEBV0kS/onKr1+w5+Y5Cbgofak4Z3Ti5L3ojDBc8kw65Vtx6o9wx3YS5V9ysKUUEX+UwhB64E9kvxj7vBYFIu1XfF+kIrKckHm+/g6xpFgZ5A/5AGlwyh+kOlISro0lsLuWuk6FhwV9P7vkJ+3Kf93FinGm1kbB+fzeUON4XkvPM/VbzrwQVfnFdARAVdVMh7h7hNXtJIUaHh5gP7aoQFakEG0QsGU/dvRSEq6KJC3vtyeTQDzh1C9Vvq1lPCOw53fjZVDygKUUGXlLKQsWlDaTnFwc9I/d/Iu+tDg0tyqf5DrC+0gqLRHm4eMEKxBnpivcundVIuDRuUhqigS1JbznczI6z/IfALFZcui8vkJWso7tuKXeVwl6IFmIK0Fmx8DjUPKQpRQZek8zp5X8kg82zDSkmN58gTbZ3DTYvHb+srKC7p6Nbtq4o1UL9rxbuoOzMFiqigS8KtoHi4BxOBs4B+SiRm97XRetE+NHwQy4u8w6j+zfS7HtwFOt4Dtdrg7Fyqn1YUooIuobSSwjEObwJwEroZK97iNnlJ536aBwxXrIGJaV5/ERV06YEinjcAMk912MXA15RIjx+kcZm85DVG75iBPwM4V8d+oFY5OCub6r8rClFBl0CsoDDPwzsPOBXor0QSKm6Tl6yi8Ejw7gCGKtZgu/VNZE4eyaJPFIeooEvCLKdwcATv/wGjlUag7nZklmazaH0sL7KSvAGOjJl0rC8vAV4nG/64XGqXKApRQZdEthSuiZJzDatQhx6odzofh3ow1hdqpPjbhrsdbIhiDbZb78fGSXvy0kbFISroksBuvSQ3gs0DDlYagVoQITJ+GEvWxaFbvx44T5EGahW4cTlUPasoRAVdEtlSeE0UX2IwHchUIoFZa3BeLtUPx6Fb/47B7cBgxRoYH7ijD61le9PQrDhEBV0SZjWFX4/izQfylUaQ11fxeRyqkbE7Gy3T1a0HfmJeaXjjcli6WGmICrokzELGpg2jdRrYFUCGEglMk4d3VhZLF8ahWz/R4LfAHoo1MO0Gp+dS/UdFISroklArKNkvAvMNy1MawXbr8XgcSt160PvRbvyQtikH0dCmOEQFXQLp1rNonWzYNerWA9Xo4Z0dj259JcXHOpgL7KVYE+JdcKfnUPWEohAVdAlcE8UH+nA3sL/SCIxvMKcvrT+P9QarFZTs7uHfAu77irVHT8kPttFydqxz+IsKukhcPUde+q5kTjLsWiBdiQQmblONrqL4ZHC3gH1FscZV3FbZExV0kZ6rJow5AKLzgW8ojcDEbfKSFZTsHsFutY4FeSR2C6KkXTSCxe8rClFBl9BrZGwfn83lDjcFrcoWpH86bFw2NbWxX6iV/BRsDjBQsXbLG52r6T2iKEQFXZKwsI8uMvx5wL5KIzDtDma0s3P5CB5tieWFmjh4L5/ob8GOV6xd9gm46enYzCFUb1IcooIu6tYl1oN/mY8bl0tVfezdun5b7wID/s+ITMllyRuKQ1TQJWWsoGi0h5sHjFAawXXrwG828dEvR7KsNbYLtfw9jchNuhP+S/3dwyZlUfMPRSEq6JKS3iav32bSfwPuYsBTIoE1jy86vDOzqXoh1lfqfG79RiBLufKyB1fFYx17ERV0SZJuvbjEg/nq1oPt1g2buZmPr4y1W19Dcd9W3FSH/YzeOcHQK8AN2Qy+17EgqqElKujSqyxj7A592Twd3AUamwH26vAP4Mxcql+O9bVWMXofw7/OwYm9JL5nwWZmU/OQ6/jNXEQFXXqvlRSOcXjzgOFKIzBthlWso+2KeMwl3vF0g90ANiYFs/KBv3m4X2dRVa2hIyroIp/xGqN3zMCfAZyrcRqo+gj+mcOofTUOnb9rovgEg8uA4hTIZhXYnWlE5g9l6dsaKqKCLrLVM2bJUcAdYEOURmA2O+yqLIbMjNfvwZ3fwlwGHJtk56FPHDzow105VC90Hd25iAq6SNdO/nkDPDIqDM5SGoGqBm9cDktfj9++LfiqwzsN3KlAdkg/90bgEcPdl4H9TZPBiAq6SMwn/9FHO/zbgb2VRmA2GfbzHGpmx7M7NXArKSqJ4J1q2IkEvFRrx6Q7PAnek33ZvCjW1epEVNBFvmA1YwZGic4GTlMagZ46lvjYuOFUr+iJV2+keF8fO8zhxgJjgd178iIFeAHcc0B9Gu5p/SYuKugiCbKKouPB3QbsqTQC0ww2LZuam3ryES0Dt5qCLJ+0EWAjwL4K7qtAbuf+37ELL9MCrDWs0YMmcE2GWwXRl1bT99XDWNSu3Skq6CIBeZOCXduI3GjwY6URqEUe0bOyqGsM4s2fIy99F9J2iZDeHyBK2w4+XrPhb84gfeNQlmzQzWuigi6SBFZScozD5qLf1gPt1h3umiyqblDxFFFBF+k2/bYeGot9OKunflsXERV06SU6lvHkZmA3pRGYjxzu0iyqbtf0pyIq6CLdtoKS3SPYrQYnKY1APeHTfs5w6tcoChEVdJFYu/VbgV2VRrDdejZVcxWFiAq6SAxFvXAPw/ttL1rtK6wei+KfO4LaNxWFiAq6SKzd+m+BXZRGYDY43GXq1kVU0EVi0kj+nkb6bWDHK40gTzr2tzTceUOofktpiKigi8Tard8GDFQagVnvcFPVrYuooIvEpImD9/Jpn0vH8p0SnIc90s7LYvFaRSGigi7SLQauiZJzDZtB1+YDl57xPrgLc6j6P0UhooIu0m2rKBkGdidwhNII1II2Wi/ch4YPFIWICrpIrN36TGAHJRKY9wy7IJeaPysKERV0kW5roiA7inenwx2mNILt1jOIXjCYun8rChEVdJFYu/UKoL8SCcw7Dnd+NlUPKAoRFXSRblvNmJwo0buAQ5VGsN16Opw/hOoPFYWICrqIuvXkthZsfA41DykKERV0kW5bTkluBJsHHKw0gu3WI0TGD2PJOkUh8nmeIhDZthFUrcxm8GEONw1oUSKBOTlK9PmVFH1LUYioQxeJsVsfPTKCPw/IVxqBMeD2Vrwp+7L0Y8Uhog5dpBvd+tJlq8ksUbceeDNyXgb+SysoOVxxiKhDF4nJCkr2i8B8w/KURrDd+iYyJ49k0SeKQ9Shi8h2G07VK01kFHV2661KJLhuvS8tLzVSNFZxiDp0EYnJSor3d3A3cKDSCLZb78fGSXvy0kbFIerQRWS75VL98oe0FnZ2621KJLhufRP9X1xFySGKQ9Shi0hMVjHmAIjOB76hNALjA3f0obVsbxqaFYeoQxeR7ZbDkhcdmcWGTQeiSiSw89t5m8ioX0mJHjEUdegiEptGigoNNx/YV2kEpt2wmT4DrxrBo3rUUFTQRaS7RX1sH5/N5Q43BYgokcBOeMt8vDNzWfqc0hAVdBHptiZKiv2OOeH3URrBduub+fjKkSzTo4aigi4i3bOG4r6t2FUOdym6jyVIL3vYmVnU/ENRiAq6iHTbCopGe7h5wAilEZg2wyrUrYsKukgSeIdR/dvp0ydKxoBWrK+jvU/n4P8ojfSoR3T9EKo/DGLbljF2h360Xm/Y+ToeA/VcFO/MESxdpihEBV0kIMbJkZW89TUPvuHwcw2XDWQB2cAgunYTmgHvg60C9y+wfwHLHd6/IOO1bBZt7snPsJLiIxzcCQzTHg1Mi8NdlcWgGY4FetRQVNBFetoKSnZ32BEOKwKXR8fkLf178C03AzUOFhrewig71fXEo0/LKdwpgpsB7hwdm4GqdXBmNtWvKQpRQReJo+fIS9+ZzIMd/lEOd1RnAQ9y7G4CnnLYvWm4B4dQvSmeL95I8bcN7gAGa+8HuY/dFdlUVbqOGedEVNBFulvEdyXjCOBkgxOBXUK6qR8Z7s8Gv8ulaqHr+Oo+ZivJG+CRXmm4cRoNgVpq+ONyqV2uKEQFXWS7CllJvsPOAX4Q4iK+Ja8AN3xI6x8PoqEtTnkc47C5wN4aHYFpdnB5FtU3qlsXFXSRbXSjkHmqw84lJRYzcWsMf1Z/mm+LxxKeqxkzMEp0NnCaRkugno0QGTeMJasUhaigi3xGEwXZUbzxDnc+MCAFD68PHPbLJjJvPoxF7bFf+Iw+Gvy5ruPOfQnGJoe7OouqG9Stiwq69Hqdi5VMAb5H75jX/BUPuyyLmkdjfaE3Kdi1Be8mh/uRRlKgJ85nwM7OpqZJaYgKuvQ6nWuE/5yO38d749h7xGEXx6MI6Lf1UPj0t/U58boZUkQFXUKtiaJvRnG/dPBdpcFG4OoPaZ0V641zyzl4twjtt3ReIElwnvBpP2c49WsUhaigS4oW8oP3Mtp+Zbgz0CIkX/Sy4c7Opao+1hdqpOiHhncT2FcUa2A2GEzKpfouRSEq6JIy1lDctx03wbDLgZ2UyBa1GzbTo095rFPLrqBk9wh2q8FJijVQj0fxzxlB7ZuKQlTQJWkZuFUU/8jBdcBQJdLl3F71sLOyqamN9bVWUnSqw80h+Z7hTyXrgNIcqu9RFKKCLkmnkeJ9O6crHa00uiVq2AyfgVfFOk98Ewfv5dM+FzhWsQZ6en3Q0TY+m/p3lIWooEvoLWRsWhatkw0rB/ookdi7dXBnxuO39VUUnwz8Vt16oNY73NRsquYqClFBl9BaReEo8O4EDlIacdVu2Mx4dOuN5O9ppN8GdrxiDdQjaXjnDWXp24pCVNAlVF35UFqucHA5kKZEeszLHpyRRfXzMXb9rpGis8HNRDcpBul94KIcqhcoClFBl8CtZMxQR/T3wMFKI3Hd+mY+vnIky1pjeSH9th4aC6KkXTSCxe8rClFBl0B0/iZ7Oyk573rovQD+GTnUvhRrt95E0XjD3QDsoFgD864HF2RR/RdFISrokuDOvHCEw6sFBiqNwLSCu3Y1GdfFuthLEwXZPpG7gLGKNdBT8L3p2IQhVH+oLEQFXRKm4wartN8CJyiNQL3kwZnx+G29iZJzDZupbj3Ybt3B+dlU/1VRiAq6JJQehwqFNsMq1tF2RaxzwncuY3unwx2mWAO1IB3OV7cuKuiSUJ03WN0GHKc0gmQvQtoZOSx5MU7degXQX7kG5h2w8TnUPKgoRAVdEt2tnw7cBOyoNAKz2eHKsxg0w7EgGssLrWZMTpToXcChijXYbj1CZPwwlqxTFKKCLgks6iXDwO4EjlAagaoGb1wOS1+PrVs/OdLIm5OAa9Dsf0F6w8Hp2VT/XVGICrokzGe+sp2hbj01uvXllORGsHlozoEATsyuAZjbTMYfRrLoEyUiKuiScPrKNjSH9hIfGzec6hWxvErnrICXOrgKyFSuPWo9uLvAzY31WxZRQReJd7eux6GCtcnhrs6i6gYHfmzd+uiREfz5aN7+nrDcwc3NZN6pblxU0CWUVlA83MPNAxujNAK1KELk7GEsWRVrtz6Mlp8BvwAyFGus1708Aa4im6onXcd/F1FBl6To1vU4VLCaHe6aeHTrKyjZLwLzDctTrNvNB/5muGvisUSuiAq6JFznb+vzgEOURqCHfNx+W8+idbJh16hb75IW4D4j+stc6v6lOEQFXZK8W9fjUCHxscNNyaLq9li/6m2i6Js+7m5gP8X6pdYDN0ZJu1Grq4kKuqQcPQ4VmsP/ScM7J5clb8TyKs+Rl74rmZMMuxZIV64dF02G3ZJG2nRNDiMq6JLSPvOV7dXocaggfeRwl8ajW1/FmAOg/W5wB/T2Qu7R57psFq3X8BIVdOlF3frokRH8eUC+0gjU41H8c0ZQ+2YsL9LI2D4+m8sdbgoQ6U0XRobdqkIuKujS67t1PQ4VCuuBiTlU3xPrCzVRUux3/KyyT4pn9iFYRRS7cQS1H2kIiQq6CHocKiwMHs2Ac4dQ/Za69S1qNuxGdeSigi6yBc+Rlz6QzJ877HJ0g1WgnafBJblU/yHWF2qkuNSgMkVyaXO4OxyRa7NYvFbDRFTQRbZhJcX7O7gbOFBpBHmCsL9FiJw7lKVvd69Db52WIhdnBvyf4f88l9rlGhmigi6ynd26HocKhfUONzWbqrld/Rc6f0O/E/haCnz+p3z8acOpbdBQEBV0kRh0PA4VnQ98Q2kEakGUtIu2NkHKGor7tmJXpcjv5vUGP8ul+mntelFBF4mT5Xw302Pd1b3wcaiwec9wF+ZSdf8X/4+VFB/h4HYgO8k/4wrDTcuh6s9aNEVU0EV6SCNFhYabR2p8lZvU3XobrRfuQ8MHyyncKYK7FtzFgJfEn+kTw830GfCbETzaol0sKugiPWwNxX3bsGvBlSV5AUl27zjcLMMuBgYn8eeIGtzuk3al5lsXFXSRQLr10UWGP5/Un7xEeu4E+Izhl+VQ+5LSEBV0kYC79RS6CUsSZznw8xyqFygKUUEXCZEVFJd4uHlgX1UashXrHG56OwNm6XdyUUEXCX+3fin6bV0+rx24y8ddMZyq9xSHqKCLJIEmRh/m499J8j8+JfHxlIdNyKLmn4pCVNBFkszb5PXbRPqV6tZ7tbXAtHisHieigi4SsFWMPtjhzzPIVRq9RjvYLVHsCi1pKiroIimkY+IT7wbgXI35lLfY4KJcql9WFKKCLpKy3XrJUcAdYEOURsr5t8NdnkXV7ZquVVTQRdStS/LxgXsziJYNpu7fikNU0EV6mUaKv2MdC4kMVhrJevJyDYZdmEN1ndIQ0d2/0ktlU/2Y0bofMFdpJJ11DkqzGFSoYi6iDl3kP1Yy+mjw5zoYpDRCzYDfR0mbrEVURFTQRb5UI2N3NlqmA+cpjVBa4eGdl8XShYpCRAVdpAvdeskxDpsL7K00QqHNsAqfgVdp7nURFXSR7bKaMQOjRGcDpymNQFVH8c4dwdJlikJEBV2k21ZRfDJwM7Cb0kioZoe7JotBMxwLoopDRAVdJGYrKNndw78F3PeVRs8zeNThLsiharXSEFFBF+mhbt3dAvYVpdEjPnS4n2VTpccIRVTQRXq6qBfuYXi3Ovie0oirBVHSLtKjaCIq6CIBdOvcCuyqNGLS5OD8bKofVxQiKugigVhD8aB2bK7hjlYa283AbuxH8+V78tJGxSGigi4Slm79t8AuSqNLVvu4s4ZT9YyiEIkvzeUuEoMcqhd4pO0HPKQ0tmlBhMiBKuYi6tBFwt6tnw7cBOyoND7nPQfjs6n+q6IQUUEXSZKiXjIM7A7gW0oDgP9ro/WCfWj4QFGIqKCLJBUD10TJuYbN6MXd+gaHu0zPlYuooIskvUaKssDdaXB4L/voT0Txzx5B7ZsaBSIq6CKp0q17jRRdBO46oF+Kf9xPHEzJonqu61i7XERU0EVSSxMF2T6Ru4CxKXoiWRbF/Wg4Va9ob4uooIukerf+6W/rFUD/1PlYdmOUgZdpvXIRFXSRXmU1Y3KiROcBhyT56eMDw8blUv2w9qqICrpIb+3WvSZKzjGskiT8bd2whRm404ZQ/Zb2pkg4aKY4kWCupP1squZGcaOAxUm06e2GuzqHIUeqmIuoQxeRz3W7J0eaeGuKYVcDmSHe1DcM/9Rcapdor4mooIvIFqygZL8IzDcsL4Sb95Aj8/RsFq3XnhJRQReRbVjI2LQsWieHqFs3w67PoeZyB772kIgKuogkX7f+bwenZlP9uPaISPjppjiREBpO1StNZBQ53DSgNYBNeN4jmq9iLqIOXUTiZCXF+zu4GzgwQW/5u3QYP4TqTUpfRAVdROJoGSMz+jLgSrCpQFoPvU0r2EU51NyhxEVU0EWkB62icBR4dwPfiPNLf+jh/SCLpQuVskhy0m/oIkkkh9qXPqS1wHBXA9E4Xdf/C7wSFXMRdegiEoBGigoNNw/4Wgwv84Qj84d6vlxEHbqIBCSbmtp0yAOb2b1u3eZkM/hoFXMRdegiEppufXSR4c8H9ulKJTfcNblUlSs5ERV0EQmZNRT3bcWucrgpQGQLf9YOnJ9D9Z1KTEQFXURCbBUlhzjsLoPcL/xfzQ6+n031Y0pJJPXoN3SRFJND1bNpsL9h0/nv/OvNBsermIuIiCShJkYftorilxspPlRpiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiISNC+RdC27aFWvPAX9P8PbEYy982x3HIBw7YHjAgM6/3gmIfO7fNzbiaAV8jPU41gHrcG4dvv8BjrW4yBu08wb0WUvD+DbtahERUUHvtnKP/AGjwOWDjcRjJOb2A9szgZ/RB1sNLAO3DMcycC8ydO9lLDglqiEgIiIq6F+mcPYIfP9bOA4HDgN2Deln/wioAaowW0T/j5ayqLw98d9WVJbjGN3j79PO6TSUrQ0s7YLK+TgG9eh7GC3UlR271b85+b4Ib7z1mA79eJ1B3C+oKa3d6t/kV1yN50oSsDE/pbb03QDH+D049urhMb6JurLju7At1+HIS8jnjvqX8dzk5xOadd6Mr5AWuSkU9cXHwP2S+tJnt7Av/gKuTyI2JS0ur5J//Z546T/C+Cnm5wX0Rf722gk4CjgK56B5wDoKZj2K8SAtbQ/z0qUbE3RGHIXZt3r8bTz6Bpx3CcaIHn6P5m3+xfuvOmzAt5A4FRib1YWifwBGAsa4BT3GR2Pk9PB7fNLFvzswIZkDuLRdElvM5+QSiT6CsU8IjoBWcGdvsZh3+DYkZmzGVtAPqhyNx1TgaOwLv3Mnn4FgP8HxE/qkfUxB5Z+Au6grq9ZZW0QkBApnFmHRB4HdQrA16zD7HvVlfw9LPGndDPUwLHIF2GEpOmx2BM4BzqFg1vOY/ZL6DX+Fcl9HlIhIAPIrT8L4PQT+bSNgjUT9o2mY8lqYIvK266/zKveioPI+zHsmhYv5F3fcgTjup2DAixRWnKCjSkQk0Z15xUQcC8JRzKklLVoUtmK+fR16YcU4jApg5146pPbD3F8pqHgYz11CTVmTjjIRkR508n0Rmt6ajXFRODbI/YVo359SN745jHFtu0PPuy2dglm3Yu6uXlzMP7tDj8VnGYWVZykLEZEeMuqG/qx+6y+4kBRzZ3OoW/8DGsJZzLfdoRfO2Qm/+QFgrEbX5/TDuJOCymL6bbiEReWbFYmISJzkVe5FhIcgQY/ebV0UXCm1ZTeFPbYtd+jFFX3xow/gVMy34hyaBzzJ6Ok7KgoRkTjIrxhJhOqQFPONmH2PutKbkiG6Ly/oJ98XIer9WcW8S8bQlvEwY2/eQVGIiMSgoPJwnFsCDAvB1qzFeYdSP+mhZInvywv66rd+AfYdja4uO4Tmlj+COUUhItKdYj7rdOBRwnGv1itEvSJqJzYkU4T/W9DzZ5cAV2h0bS93LAWzL1MOIiLbXcyngs0HMoI/lfMU0ZYxNEx8I9li/EJBL/fAvxGSfta3gNgvKZh5gHIQEemCseVp5FfeBnYdhGDScHPzaO93NA3TNiRjnJ+/y71wwKkY39QoiyVPrwI4QlGIiGzF6Ok70px5Hy4UP+8acA31peVJXoA+d3VS1vG5AuMDL2EsxfE6sAoXacSPbsaLtOJHMzonuR+C54Z2XnwUAWHqig/noMrv8lzZozpiRUS+RHHFINrcw2DfCMHWtGCcTX3ZvSnQUX7anc8swuzAgLZjHUYl+POpn7ymC3+/7HP/reDGbFz7jzA3IcFrrX85jwvouLlDJJVFMfeeYpDtUjhrFFF7BBgcgq35ELOTqJ/091SI1vtMd35SIFvgeJSMzFzqy67tYjH/X3WXNFJb9huifXNxXA60BJzrd8mr3EtHrqSwVnA/pr60XlFI14t5xVGYLQ5JMV9FNDo6VYr55ws67ugAqvljDB10HEsuXBeXl2sY30xt2W+Aw4C1AeaahueO1dErKWojuOOpK12gKKTLCirPwdwjwE4h2Jpa0tqLw7jASmyFBzpuTmjjawl+b5+odzELTonG/ZXryqopuHE0tFcDewRzqWQlwO06ikNmET6FjA/1Nvq2C86VA5kh3Lp1wDHUlVZrMEnXmKNg1lXAVaHYHMef8eynVF26KdWS7ijoLelfw9vOpVRj38mv0TBhZY+9fN0ljeRX/hTHEwTyOIQr0oEcRuU+tcwN7eYVztoDx+MhLebvgv9t6ia/qHEkXTJ8Tia7zJoH/DgcxdzmUPtRGZT7qRh3RxH33G6JD9at6/H3qC97CsdfgrkotWE6mmW75M0eitmzhOupjU814byDVcyly4ordmGX6BMhKeZRHBdTO2liqhbz/xZ03K6JL3h8lZHlGQnYjRUBZdtXi7ZIlxXcmE3EXwh8NYRb909c5GBqJy7XjpIuya/MIeqqgENCsDWfgDuR2rKbUz32zsfWbEAA770b/QaUA5f36Ls8V1pF4axrsQCmFNyYoRn3ZNuKKr+G3/4kMCiEW/cc0eh3aSj7QDtKujaeZxXi24PA7iHYmrU477hkm5M9xoLumgOZUMbxMwoqR2BMpb5sVQ+9iVHLlTrKJJQKZ+fh+48BXwndthmL8CIn0FD2kXaUdElBxffw7V6gbwi25hWi3jHJOCd7bAXd/I9xgU2j+wMcx5Nf+RjO/kTUf4KGKeoGpDec/A7G/IcJx2M8X/QQafZDqids0o6Srl2cVkzEXAUk+gbrL20Wn6K95QfJOid7bAXd89ZhgU75moHjeHDHE4lAQeXrQC24V3DRZfjea/j91tAwvk1HjaRGMa88HHgA2CGEW3cv/TacyaLydu0o2SYvGqGg4kbMXRySLbqL9n7n01DW6+pF51fu3j8hGqbt2qfjHwPzOh46izRHKah8C2jq/KcRownPX43vraZ5w5ssK2/V0SWhVzTreHz+BNYndNtm3Ez9hgmpfCewxHvMuJuB4aEYvWaXUz/put66KzoKeu2ENymoXE84FpbfkggwtPOfjjsnHf8t+P0H+BRUrsXRhPEGuEbMloP3L9rdcp6f8L6OvNQ/tYS/M6/4Cb7dzRcXRgqH6dSXTdMw0hjfTmEo5i1gZ1E/6Q+9eXB85qTiaiAUy9h1lwcMwhgEjAbrnE7Gh3SgoHIdxovAi3j2Ir57nv4bXgn8a0Xz/QDvX0g14e4qCyrOB3czYfiN8X+LxBTqynroEU/nJ8O1lsZ40voQc9+jvuzZ3h7EZ7uEvwLfSeHPOhDHWGAs5jqKffOATyiorMOxFJ9nWRdZzIoJiV3YxTmd6XpDh14waypYGL8KjOI4j9qyu3pujJupnveCMR6MVfjuaJ4rfV1RfLagO/6KcSMd/WxvsQNwOMbhOGCX6EYKKhZiPEpG+l9ZesnbuuJW95LCxbwF506ltvT+Hi5BGuM6X/TElWINaW0nUHWplvDt9N+v/mpL38Xc73t5Hv3BHYtzN9PWvoaCykXkV17AmFsG9tyY1BV36p7szJFfWRnSYr4R547r8WKurlIFvUdGlN1PxD9cxXxLBR0gzf81oEdV/pvNoThuobXlTQoq7qCo8pvqXsJ9mIdmS06+L0LBrDtwlIYwp3U4/1vUlj6ZmEZKY1wXR/EcTzaH+o9OoXqS5kjYakGvnrQCZ9cplv/RD9zZ+DRQWLmE/IpDdcWt7mWLRpZnsPqtPwJnhTCjtUTsUGon1ySwBGmM63wRD1HMLkr1BVbiV9AB2vtfg6NO0Wzx5DQa5xZRUPkgBTdmx+FqU1fcqXSyGz4nk/4D7gNODuHgbSQaOZjqSS8nuqXS0FRBj9EnwAnUT7pFQ2B7CnrD+DbaORFYoXi26jhof4XCyp9x8n3dX4TFnK40U6VwjLqhP7u0PwKcEMJi/irp6WNomLAy8bvF1xiPX0NhvfAzv43HodSVPaIBsL0FHaChbC1R7whglSLaqn4Yv2b1W0+TV7lX9052+joyfge+BZflmFsG0if9KXBHhDCZesg4JEFPbeiitUcvjnrh+cJxPzVl/9DO725BBzpWqEkvAJ5QTNt0KBGep3B23nb/m76+jkz6k13hrD1obVkIVhTCVJ4hvfUI6i7+d6A9lsRLb7w4uoTCWTdDuafd392CDlB38b8ZNuhoHJcDzYprq/bA/KcpqDh4+4qQvo5M6sKRN3soZouBA0KYxwP023AMS6d+HOxeUYeui6NYP7VdSMGAexhbnqYh0N2CDrDglCi1Zb/BYyS4v+hqe6sGgHuEwlmjtqOiK89k7V4Kbswm4i8ERoQwi3vot+EHLCrfHPiW6MbPeFa23nxxdCobB9zP2PI+GgfdLeifqilroq70JPAPxNz/I2TLs4XIjpg9SMkNu3fxelvdSzKe7ArnfB1rXwLkhC4GZ3OoKw3T8qca4/Hbub07S8fxNO/8N8bevIPGQiwF/VN1k1+kvvTHRGwYuGnAvxTj/xhGe9qNXRug+joynpUsMcV8dh4W/TuOvUMYwvSO53RD9M2PLlrjm6YiOIxNrU9TXLGLsoi1oH+qetJb1JVOp65sH8wV4LgW3PMacP9xCgWzju3C4FReyXSyy591COY/A3wldJ/dUUZdCJc/1fTGKujxT6GAqPcUB87ZTWHEo6B/Vn1pPbVlV1JX+k3S0wYDPwFuBZb18gF4TXi6F+sbcBb9EvAePfsz0EGV38XZY8BOIRtn7WDjqC2bFdLjIFEdesBj3PX8GHdOP3X+95x2IBn+s+TPHKIsOsT/jsGOZ13/2PkPFM7ZiWh0fzy3H9gBwH7A/sDOvWLAFc46cqtzZjv7dOH2HhYZEHAYAxMReI+9cmHFCRh/AjJDNshagB9RN+mvoT0MnLOEfBFlftBjvOfPaaZv9L6Qx744bzGFs4+kduJyFfSeVjvhI2Bp5z//VTJjGO2R/cB9HUcWZsPAssFlJaibS9SA+ymwlYKOn5DvMLz24C6gRpZnJGif9kwnmD/rp5jNS8jxsn0+wbwTqZ/4dLiPAd9PyEWr74Ib48UVfYlan6Qd48ltGOYvpmDmt6mb/KIKehCqpqwGVgP/O53fgXN2I83PwpGFs2EYQ4Gh4PYAGwzsQfKs234sY8vTtnjHse/8hDTovjcwsAQG9N85MWv49UD3kl95Ac5uIl4/T8XPh3juaGom1ob+CEjURatzwY3xVrczkYS8kzr0L7cHeAspqDyGurJqFfQweX7C+8D7QP2X/0G5x+hd9yQaHULUBuHZEPCGgH0dY2RH8Q+NXdi089eBl7ZwErKEHKOOUcC9gSQQTT8gMeehOD8xUDBraijXMjfexrxvUzfxlaQ4y/jOEnLR6twoPv2pL9E8OyAxP52FsEM3bsZxLpAR8JYMBB6ncOYJ1E5eqIKeNMp9lvI28OVzU+fPHILzvg2cAYwJ/oRm+2+5oCeoe4GiAD9/UWLOdXE82RVUloNdFcLB/zq+d1TH1MxJwjk/IRd0foBT7zqXqPcO4Vfu3l/w/UfwuJ/Ab0xkR8x7lIKKH1M36S+9raCn5ty49ZPXUFd2B3VlB2Pet4D3gj2hMXzLV7eWqLtWDwps2kRHYfKc7MyRXzkLCF8xN/5BWvshSVXMEznGHfnBTQ3qChM0BsL5G/pzZY9i9l3g4xBsTSa4BRRUnNH7OvSiym9ingtsC7zoBqon9dxSrfUTn6Zg5sEQeREsoCkD3YCtnIRaEtSh92PjTt8CHkvoRy+csxMWPSxBlSO29QZOvi9C0+zbcYwL4bG6GL/lOKqmbUi6s4yjJUHv1J9NOx1OoheUyrtuANghCcoyvGtq1E/6O4Wzj8b8Rwj+0c4IuHnkzxpAfemc3lPQfR4Ff/fAtiDq3mdk+WCWlbf22HvUTf4X+ZW34ZgYzAnN3/I0hb414xJ1PeUuSHhB9/0zcQl6asG57p/sRpZnsPqte3H8IIQt7t+I8APqpm1KztOMNSfo92Uwd0HCC3pa5jgsYU/mhHuRrNqJSyicfTjmPw7sGvilpLNZFMzKpK70ht5Q0D2gMeBt2I3+O/04Afs2wDsfvY+2vFne+wkc3sdRNKswYe839uYdwKYmrm7QvSzzbutH/50fgBAWc3P/j2j/E6melKTFHLAEjnE4gfxZ+Ql7t9HTd8Tc1AR+vvdDv79rJzZgfCsk2+rArqeg8jp6AQ9nIXgY311D3m09e4XrLLjB5fsfbOVs905CB7dvd1JckZgbVza2zkzwfOdru3XREWl+COw74Ts83W+pX38qDePbkvs04yd2jGN3JmxFrraMCrA9E3jRujYpdnl92QtEo4dgW7hxOfGmUlB5S6qvqe5h/CME2zEUr7myhw/z4QGemNds8f+KRlcmeGNGEvXu7fGbhwoqL8FxXoKvxVdt19+PuWUgzW1PAoeH8NicTl3pBVCe/BOJeGkrEzwO9mfjTr/v8TFeWDEROCfBaa5Kmv3eMOU1nH8YsCYkW3RBqq+pnoaL1IdiiV3HeRRWLqe2bEYPvcPpgX22yFYumnb8ZAXNO29O7A179j2ad36IMbf8hCUXrovrS598X4Q33roK4xeJbwSt689l51XuRWvLE3RMRRy2zvzXZGTMYMwtA0N/BtnrKx+x4JSt38XenrmcSHMLiZw217nv07zTA3yj8lReKFsf/zH+Zjnmfp74iyPv5aSqMHWT/0XJjINpjzwN5IZgi06lecBOjC0/hUXlm1OtoDvybksn0vwBoVlwwv2WD71SVkyI352x+RXTcO43gXwc423qSwdvdTnLwspajIIAtm4tjqkMHfSHbZ6Uu+KgytF4zAQKA/gsUVr5SpdO3nmzhxLxnwJGIDGmHv0aDVNe2+bfFVTWAwcFcvzhppK19x/jMsYLZ48Bf2ZAx2s7LrJr53Ta28r7ceCoxGTsfWub0w/nVe5FxJ4C9/WQ1JmFpLecwNKpPf+YXUFlMwl6Pj+NhvFt5Fc8iXPfD0fQdj4DowUUVF5KXdkzMb3UmFsG0tZSgXFmgB/o4W2uTe3zNC6QE8ReGPew+q1yCirvwXOP8YH3Qtcvpso9igbsg2+HAqcBJQFemjZ0qZgfNGsfPP9JQCs0JdbTgRR0x95gv2P1W1dTOOtuHI93f4y70zG/OMAM67tUzMOooWwthbMOx7cncewfgjpzGO0ZT1Fw09HUXfzvVDnIOn9LcH8Avh+arXJ8E3iagspq4C4i9ijVk97q0r87sjyDfjsVg/serS1nATsGO27szm3+TYQn8PlZgFuZA5TjWzm7RFspqHwReBncBrANOFsPrh2zAcDOmBvQeU/CQfjslLBHkrYe9LYfVSqc83Us+gwdawFIYj0BTA10jJtdjXF18o7xBD+OF2+1pe8y5pZDaW15HMgP/pRBAbT9nbzKI2koW5sKB1lHQe+/4UGaB7wFDArZ9hUDxUSdUVC5EuNVnL0BbiPYR+BFcewM7ITZQIx9cOxLeFZrq+W5SXXb/KuaDc9SMGA1MCwE25zRebDl/2e6TnP/udL67H+EinN/2PYftR/ZscCPJFzdhkUUDHiDcKyzkIxj3HDevUk/DpZcuI5vVB5FBn/rPL8HbSQRFpI/80jqJ69J9ng7buFfVN6OY1aIt9MBw3EcD+7ijit99yuw6zCbhtmFwI87O/swLb16edf+rNzH7G6d9bttMTVl/1QMYVbu4+we5dDtcv73lFnv+4Wy9WxuPxJ4JiRbtA/OW0Lh7KS/p+a/z+T13XAT0KQjJ24e2q57ANKjNxOOeZCTcBS7GQohCbS7W4CNCqJbLU1qjfGXLt1ItN9xGE+GZIuGdq6pfkBqFPRF5ZvBJunIiYv3iDJ+u/6NqkvfA+Youu1WT83EhxRDEmgoW4tpjHejmC+lruyR1BsP45tZFzkOeCAkW7QHeIsoqCxO1kg/P2tO3aS/gPutjqCY+Pic2a2bLKItNxCeSRiSQRSYuM2nCCQ82rgeeFNBdFk7zk1O2U+3YkILGzecgtn9IdminYEnKZx1ZPIXdIB+68tw1Ok46hYDu4jnyh7t3hXrtA1gp3YWKtlm2vYr6sqqFUQSeaFsPeY0xrvul9SU1qb0J1xW3krW4B8CYbnHoj9mD5FfeVLyF/RF5ZtJz/wO8IKOpe3lfkbdpNi+4aibtBjHr5XlNj1L/4+uVQxJqL70WZz9RkFs83yykH4bftUrPuqCU6IMG3QWcFdItigTx33Jtqb6l09Uv+TCdUSjR4Kr0UHVJS0Y46grnR6XV6stvQq4TbFu0UtkZJ7IovJ2RZGkasuuxJirILboRVrtpF41xhecEqWu9BycheU+i0/XVJ+Q3AUdoGHKB3zojdVBt01r8TmC+rL5cbwyN4YNugj4neL9H6+Q1n5k3Oegl0R3n0bWoAtx9ntl8SUXrG2RI+M+B32yjIvaslKcmxmWDepYU73ysuQu6NBxw0J92XjgJ+De0XH2OYa5eWRkjuS5sqU9dLV6BrhpgK+4AXiEaMuYzicCJBU6stqy0zXGP3daeRgXOZjnJ7zfezNwRm3plM5xEY6iDtOTYU31rq0NW1f2R6Kb9wVuBPQ1J/YqxlHUl57Vs52is46v8d0JwLu9OPBWzF1BXelxHTcOSkqdvOtKp2N2Yq8f49jPqSs7Pmnna4+3jnPftBBt0VQKZt0a5jXVu75hDdM2UFc2AY8Rnb9xNPfCIbYM3BkMGzyK+rKnEjiwH6aVfTtz722dzBLMvkl96S/1eFoKq5/0UC8e44txkQOpm/RrjfEvKepmF/GfOXoDb+bOp2Dn35F3W3pyF/RP1ZQ1UTtpIm2RLLCfdxS5lNYO9jDwPeo2jKKu9J64LMO4vV4oW0/tpIk4fzTweC84lP+JudOoKz2E+knLkNT36RiHMb1jjNurGD+lrvRQaie8qgGwxYu9W3CcH54LPfsJkeb7GVveJ2xRxWcJgsJZozD7Cdhx4VnvNrY9hvE8zn6P8/5AbWn4vgo8aOaBeN40OlbJi6TQ4VsLXEfdhgehPL4HcGHFRMzN0hkyjrq6Hnp3FFV+E59pwEkpNsarcTad2rIHe6wjD9t66HH5TBU/AXc3/1klNPAqsYiM1uO3uaZ6AtdDj/+aQvnX74lLOxw4HNwYYES3vglIvCawp8E9jXPPhLKIf5niil2Iesfi7DSMIwjnWmjbshpnD+Dc3dSU/aPH3kUFPbkK+n9OiDftCu3HpMQYj9p8npv8fM8XvxQs6AD5Fafg3O+BsHzlXQ/p393qmupJXdC/KO+2friN++G8A3D+KJzbF2MouKFgQXxl0Qa8jrlXwH8R571C1L1Ew8Q3kv7kWjJjGG2Ro8EdgrNDgb1CuqWfAEvBnsW8J6kvrU/Iuw6fk8meaf2Q+NnrKx8l9CeokhnDaPOOwXOHYBwS4jH+MbilOHsWsyepm/RcQt997M070O4SU/TS3vs4oc/Lj56+I27HtNDs6Xfam1kxoWWrTa6fnpCL0GCvdPOv3xNLG4rHIJzbDXMDwQbSMZ/uQIyBQDqOHT/zb+38he2OAh8B7Tg+xlw72Mc4NoK9iXnvgr0JvIv5b9L88bssK2/tFSfbgplfxbnR4I3EGAm2Lx1rridyv39Ax30Wr2HuVcyvYYeP/qFJYSSuY9zcfh0/9wUyxt8HXgVeA5Zhrob+65/XGJdEc4qgl8m7rR/uk33wIoNw/m4Ye2Fud5zbDWe7Y24HsHQ6vtLa4QsXUR91XkC18OlTDo51mPsYx1rM3sPsfRxr8d17eOmvbfWrKJGeMOqG/vRL2wff7d0xptkLY7f/GeNGBo7+2xjjhmM95j7G7G0c7/9njFvkXVzkdY1xEREREYmb/w+9ayGY9kixtQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyNS0wNC0xNFQxNTo1MDozMSswMDowMCRl6WQAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjUtMDQtMTRUMTU6NTA6MzErMDA6MDBVOFHYAAAAAElFTkSuQmCC" alt="Suzuki South Africa" style="width: 120px; height: auto;">
+            </div>
+            <div class="sidebar-subtitle">Yazi Dashboard</div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" data-tab="network-overview">Network Overview</div>
+                <div class="nav-item" data-tab="dealership-rankings">Dealership Rankings</div>
+                <div class="nav-item" data-tab="post-purchase">Post-Purchase</div>
+                <div class="nav-item" data-tab="post-service">Post-Service</div>
+                <div class="nav-item" data-tab="alerts-flags">Alerts & Flags</div>
+                <div class="nav-item" data-tab="regional-view">Regional View</div>
+            </div>
+            <div class="sidebar-footer">Powered by Yazi</div>
+        </div>
+
+        <div class="main">
+            <div class="header">
+                <div class="header-title" id="header-title">Network Overview</div>
+                <div class="header-subtitle" id="header-subtitle">Suzuki South Africa dealership network performance</div>
+            </div>
+
+            <div class="content">
+                <div id="network-overview" class="tab-content active">
+                    <div class="overview-wrapper">
+                        <div class="overview-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value">48,600</div>
+                                <div class="kpi-label">Total Surveys Sent</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">78.4%</div>
+                                <div class="kpi-label">Response Rate</div>
+                                <div class="kpi-subtext">vs 12% phone avg</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">+62</div>
+                                <div class="kpi-label">Network NPS</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">4.3</div>
+                                <div class="kpi-label">Avg CSAT Score</div>
+                                <div class="kpi-subtext">out of 5</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">104</div>
+                                <div class="kpi-label">Active Dealerships</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">1.8</div>
+                                <div class="kpi-label">Avg Resolution Time</div>
+                                <div class="kpi-subtext">days</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dealership-rankings" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Top 10 Dealerships by NPS</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Menlyn</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 84%;">
+                                            <div class="bar-value">84</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Umhlanga</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 81%;">
+                                            <div class="bar-value">81</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Tygervalley</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 78%;">
+                                            <div class="bar-value">78</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Sandton</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 76%;">
+                                            <div class="bar-value">76</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Nelspruit</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 74%;">
+                                            <div class="bar-value">74</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Bloemfontein</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 71%;">
+                                            <div class="bar-value">71</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Midrand</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 69%;">
+                                            <div class="bar-value">69</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Strand</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 67%;">
+                                            <div class="bar-value">67</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Pinetown</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 65%;">
+                                            <div class="bar-value">65</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Suzuki Waterfront</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 62%;">
+                                            <div class="bar-value">62</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Bottom Performers Flagged</div>
+                                <div class="list-item">
+                                    <span class="list-label">Suzuki Boksburg</span>
+                                    <span class="list-value text-danger">28</span>
+                                </div>
+                                <div class="list-item">
+                                    <span class="list-label">Suzuki Polokwane</span>
+                                    <span class="list-value text-danger">31</span>
+                                </div>
+                                <div class="list-item">
+                                    <span class="list-label">Suzuki Welkom</span>
+                                    <span class="list-value text-warning">35</span>
+                                </div>
+                                <div class="list-item">
+                                    <span class="list-label">Suzuki Rustenburg</span>
+                                    <span class="list-value text-warning">38</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Ranking Statistics</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Network Avg NPS</span>
+                                    <span class="stat-value">+62</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Median NPS</span>
+                                    <span class="stat-value">+64</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Std Deviation</span>
+                                    <span class="stat-value">14.2</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Above Target</span>
+                                    <span class="stat-value text-success">82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Target NPS</span>
+                                    <span class="stat-value">50+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="post-purchase" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Post-Purchase Experience Metrics</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Test Drive Exp.</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 91%;">
+                                            <div class="bar-value">91%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Sales Consultant</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%;">
+                                            <div class="bar-value">88%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Vehicle Handover</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 85%;">
+                                            <div class="bar-value">85%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Documentation</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 78%;">
+                                            <div class="bar-value">78%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Finance Process</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 72%; background: #FF9500;">
+                                            <div class="bar-value">72%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Satisfaction % across network</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Purchase Survey Stats</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Surveys</span>
+                                    <span class="stat-value">12,400</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Rate</span>
+                                    <span class="stat-value">82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">4.4/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Time</span>
+                                    <span class="stat-value">1.4 min</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Key Insights</div>
+                                <div class="bullet-list">
+                                    <div class="bullet-item">Finance process is network weak point at 72%</div>
+                                    <div class="bullet-item">Handover experience improving +3.2% MoM</div>
+                                    <div class="bullet-item">Test drive scores consistently highest</div>
+                                    <div class="bullet-item">Documentation speed biggest complaint</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="post-service" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Post-Service Workshop Metrics</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Invoice Accuracy</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 89%;">
+                                            <div class="bar-value">89%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Service Quality</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 84%;">
+                                            <div class="bar-value">84%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Communication Updates</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 74%;">
+                                            <div class="bar-value">74%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Parts Availability</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 71%;">
+                                            <div class="bar-value">71%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Wait Time Satisfaction</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 68%; background: #FF9500;">
+                                            <div class="bar-value">68%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Customer satisfaction scores</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Service Survey Stats</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Surveys</span>
+                                    <span class="stat-value">36,200</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response Rate</span>
+                                    <span class="stat-value">76%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Rating</span>
+                                    <span class="stat-value">4.1/5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Completion Time</span>
+                                    <span class="stat-value">1.6 min</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Service Pain Points</div>
+                                <div class="bullet-list">
+                                    <div class="bullet-item">Wait times #1 complaint across network</div>
+                                    <div class="bullet-item">Communication during service needs improvement</div>
+                                    <div class="bullet-item">Parts delays affecting 3 provinces</div>
+                                    <div class="bullet-item">Invoice accuracy is a bright spot</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alerts-flags" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Active Alerts</div>
+                            <div class="alerts-scroll" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Suzuki Boksburg NPS dropped below 30 — 3rd consecutive month</div>
+                                    <div class="alert-meta"><span>2 days ago</span><span class="alert-status">Critical</span></div>
+                                </div>
+                                <div class="alert-item critical">
+                                    <div class="alert-text">Post-service wait time complaints up 42% at Suzuki Polokwane</div>
+                                    <div class="alert-meta"><span>1 day ago</span><span class="alert-status">Critical</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Finance process scores below 70% at 12 dealerships</div>
+                                    <div class="alert-meta"><span>Today</span><span class="alert-status warning">Warning</span></div>
+                                </div>
+                                <div class="alert-item warning">
+                                    <div class="alert-text">Parts availability alerts in Limpopo and Mpumalanga regions</div>
+                                    <div class="alert-meta"><span>4 days ago</span><span class="alert-status warning">Warning</span></div>
+                                </div>
+                                <div class="alert-item success">
+                                    <div class="alert-text">Suzuki Menlyn achieved highest NPS in network history: 84</div>
+                                    <div class="alert-meta"><span>3 days ago</span><span class="alert-status success">Success</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Alert Summary</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Total Active</span>
+                                    <span class="stat-value">18</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value text-danger">4</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Warning</span>
+                                    <span class="stat-value text-warning">9</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Positive</span>
+                                    <span class="stat-value text-success">5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Avg Resolution</span>
+                                    <span class="stat-value">3.2 days</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Active Triggers</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">NPS Below 40</span>
+                                    <span class="stat-value">6 dealers</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">CSAT Below 3.5</span>
+                                    <span class="stat-value">4 dealers</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Response < 60%</span>
+                                    <span class="stat-value">3 dealers</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Unresolved > 5 days</span>
+                                    <span class="stat-value">8 tickets</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="regional-view" class="tab-content">
+                    <div class="two-column">
+                        <div class="col-left card">
+                            <div class="card-header">Survey Volume by Province</div>
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar-label">Gauteng</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 92%;">
+                                            <div class="bar-value">18,400</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">KwaZulu-Natal</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 46%;">
+                                            <div class="bar-value">9,200</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Western Cape</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 43%;">
+                                            <div class="bar-value">8,600</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Mpumalanga</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 24%;">
+                                            <div class="bar-value">4,800</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar-label">Limpopo</div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 16%;">
+                                            <div class="bar-value">3,200</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #AEAEB2; margin-top: 12px; text-align: center;">Survey responses across South African provinces</div>
+                        </div>
+
+                        <div class="col-right">
+                            <div class="card">
+                                <div class="card-header">Regional Performance</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Region</span>
+                                    <span class="stat-value text-success">Western Cape</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Top Region NPS</span>
+                                    <span class="stat-value">71</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Growth Leader</span>
+                                    <span class="stat-value text-success">KZN +12%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Best Response Rate</span>
+                                    <span class="stat-value">Gauteng 82%</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Needs Support</span>
+                                    <span class="stat-value text-warning">Limpopo</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">Provincial NPS Rankings</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Western Cape</span>
+                                    <span class="stat-value">71</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Gauteng</span>
+                                    <span class="stat-value">64</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">KwaZulu-Natal</span>
+                                    <span class="stat-value">62</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Eastern Cape</span>
+                                    <span class="stat-value">58</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Mpumalanga</span>
+                                    <span class="stat-value">56</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Free State</span>
+                                    <span class="stat-value">52</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Limpopo</span>
+                                    <span class="stat-value text-warning">48</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const headerTitle = document.getElementById('header-title');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        const tabInfo = {
+            'network-overview': { title: 'Network Overview', subtitle: 'Suzuki South Africa dealership network performance' },
+            'dealership-rankings': { title: 'Dealership Rankings', subtitle: 'NPS and quality benchmarking across 104 dealerships' },
+            'post-purchase': { title: 'Post-Purchase Experience', subtitle: 'Sales and handover quality metrics' },
+            'post-service': { title: 'Post-Service Experience', subtitle: 'Workshop and service quality monitoring' },
+            'alerts-flags': { title: 'Alerts & Flags', subtitle: 'Network-wide performance alerts and anomalies' },
+            'regional-view': { title: 'Regional View', subtitle: 'Performance by province and geography' }
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.getAttribute('data-tab');
+
+                headerTitle.classList.add('switching');
+                headerSubtitle.classList.add('switching');
+
+                setTimeout(() => {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+
+                    const info = tabInfo[tabId];
+                    headerTitle.textContent = info.title;
+                    headerSubtitle.textContent = info.subtitle;
+
+                    requestAnimationFrame(() => {
+                        headerTitle.classList.remove('switching');
+                        headerSubtitle.classList.remove('switching');
+                    });
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
