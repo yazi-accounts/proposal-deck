@@ -74,11 +74,7 @@ jobs:
           # Labels — pass label name via env var, not string interpolation,
           # to avoid shell/python injection from user-controlled label names.
           has_label() {
-            CHECK_LABEL="$1" python3 -c '
-import json, os, sys
-lbls = json.loads(os.environ.get("PR_LABELS", "[]"))
-sys.exit(0 if os.environ["CHECK_LABEL"] in lbls else 1)
-'
+            CHECK_LABEL="$1" python3 -c "import json, os, sys; lbls = json.loads(os.environ.get('PR_LABELS', '[]')); sys.exit(0 if os.environ['CHECK_LABEL'] in lbls else 1)"
           }
           LBL_DEV=$(has_label "branched-from-dev-acknowledged" && echo 1 || echo 0)
           LBL_LARGE=$(has_label "large-pr-acknowledged" && echo 1 || echo 0)
