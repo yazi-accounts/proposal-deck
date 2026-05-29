@@ -71,9 +71,14 @@ jobs:
           TICKETS="$(git log --format='%B' "$MAIN_BASE".."$HEAD_SHA" | grep -oE 'ASK-[0-9]+' | sort -u || true)"
           TICKET_COUNT="$(echo -n "$TICKETS" | grep -c '^ASK-' || true)"
 
-          # Labels
+          # Labels — pass label name via env var, not string interpolation,
+          # to avoid shell/python injection from user-controlled label names.
           has_label() {
-            echo "$PR_LABELS" | python3 -c "import json,sys; lbls=json.load(sys.stdin); sys.exit(0 if '$1' in lbls else 1)"
+            CHECK_LABEL="$1" python3 -c '
+import json, os, sys
+lbls = json.loads(os.environ.get("PR_LABELS", "[]"))
+sys.exit(0 if os.environ["CHECK_LABEL"] in lbls else 1)
+'
           }
           LBL_DEV=$(has_label "branched-from-dev-acknowledged" && echo 1 || echo 0)
           LBL_LARGE=$(has_label "large-pr-acknowledged" && echo 1 || echo 0)
