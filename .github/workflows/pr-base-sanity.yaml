@@ -3,7 +3,7 @@ name: PR Base Sanity
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -42,13 +42,9 @@ jobs:
         run: |
           set -eo pipefail
 
-          # --- Tunables ---
-          # Keep these aligned across every yazi-accounts repo. The canonical
-          # source is the orchestrator at yazi-accounts/.github (rollout repo).
           MAX_FILES=30
           MAX_LINES=2000
           MAX_TICKETS=3
-          # -----------------
 
           HEAD_SHA="$PR_HEAD_SHA"
           MAIN_BASE="$(git merge-base "$HEAD_SHA" origin/main)"
