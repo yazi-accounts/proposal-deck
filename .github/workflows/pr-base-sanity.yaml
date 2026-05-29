@@ -42,11 +42,13 @@ jobs:
         run: |
           set -eo pipefail
 
-          # --- Tunables (keep in sync with CLAUDE.md §1a) ---
+          # --- Tunables ---
+          # Keep these aligned across every yazi-accounts repo. The canonical
+          # source is the orchestrator at yazi-accounts/.github (rollout repo).
           MAX_FILES=30
           MAX_LINES=2000
           MAX_TICKETS=3
-          # ---------------------------------------------------
+          # -----------------
 
           HEAD_SHA="$PR_HEAD_SHA"
           MAIN_BASE="$(git merge-base "$HEAD_SHA" origin/main)"
