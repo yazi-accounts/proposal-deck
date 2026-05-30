@@ -4,13 +4,29 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, labeled, unlabeled]
+  # Editing this workflow file on a branch triggers a push-context evaluation.
+  # Without a matching push trigger GitHub records "no jobs were run" as a
+  # FAILED run and emails it. A no-op push job (below) keeps that run green.
+  push:
+    paths:
+      - .github/workflows/pr-base-sanity.yaml
 
 permissions:
   contents: read
   pull-requests: read
 
 jobs:
+  # Always-green placeholder so a push that edits this workflow does not
+  # produce a "no jobs were run" failure notification.
+  workflow-edit-noop:
+    if: github.event_name == 'push'
+    name: pr-base-sanity
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Workflow file edited on a push; PR checks run on pull_request events."
+
   pr-base-sanity:
+    if: github.event_name == 'pull_request'
     name: pr-base-sanity
     runs-on: ubuntu-latest
     timeout-minutes: 5
