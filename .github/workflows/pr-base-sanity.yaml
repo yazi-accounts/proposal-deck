@@ -1,0 +1,170 @@
+name: PR Base Sanity
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  # Editing this workflow file on a branch triggers a push-context evaluation.
+  # Without a matching push trigger GitHub records "no jobs were run" as a
+  # FAILED run and emails it. A no-op push job (below) keeps that run green.
+  push:
+    paths:
+      - .github/workflows/pr-base-sanity.yaml
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # Always-green placeholder so a push that edits this workflow does not
+  # produce a "no jobs were run" failure notification.
+  workflow-edit-noop:
+    if: github.event_name == 'push'
+    name: pr-base-sanity
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Workflow file edited on a push; PR checks run on pull_request events."
+
+  pr-base-sanity:
+    if: github.event_name == 'pull_request'
+    name: pr-base-sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch base + development
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          if git ls-remote --heads --exit-code origin development >/dev/null 2>&1; then
+            git fetch --no-tags origin development:refs/remotes/origin/development
+            echo "DEV_BRANCH_PRESENT=1" >> "$GITHUB_ENV"
+          else
+            echo "DEV_BRANCH_PRESENT=0" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run PR base sanity checks
+        id: check
+        env:
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eo pipefail
+
+          MAX_FILES=30
+          MAX_LINES=2000
+          MAX_TICKETS=3
+
+          HEAD_SHA="$PR_HEAD_SHA"
+          MAIN_BASE="$(git merge-base "$HEAD_SHA" origin/main)"
+          MAIN_BASE_DATE="$(git log -1 --format=%cI "$MAIN_BASE")"
+
+          if [ "$DEV_BRANCH_PRESENT" = "1" ]; then
+            DEV_BASE="$(git merge-base "$HEAD_SHA" origin/development)"
+            DEV_BASE_DATE="$(git log -1 --format=%cI "$DEV_BASE")"
+          else
+            DEV_BASE=""
+            DEV_BASE_DATE="(no development branch in this repo)"
+          fi
+
+          # Diff stats vs main
+          SHORTSTAT="$(git diff --shortstat "$MAIN_BASE".."$HEAD_SHA")"
+          FILES_CHANGED="$(echo "$SHORTSTAT" | grep -oE '[0-9]+ files? changed' | grep -oE '[0-9]+' || echo 0)"
+          INS="$(echo "$SHORTSTAT" | grep -oE '[0-9]+ insertions?' | grep -oE '[0-9]+' || echo 0)"
+          DEL="$(echo "$SHORTSTAT" | grep -oE '[0-9]+ deletions?' | grep -oE '[0-9]+' || echo 0)"
+          LINES_CHANGED=$((INS + DEL))
+
+          # Distinct ASK-NNNN ticket ids in commit messages
+          TICKETS="$(git log --format='%B' "$MAIN_BASE".."$HEAD_SHA" | grep -oE 'ASK-[0-9]+' | sort -u || true)"
+          TICKET_COUNT="$(echo -n "$TICKETS" | grep -c '^ASK-' || true)"
+
+          # Labels — pass label name via env var, not string interpolation,
+          # to avoid shell/python injection from user-controlled label names.
+          has_label() {
+            CHECK_LABEL="$1" python3 -c "import json, os, sys; lbls = json.loads(os.environ.get('PR_LABELS', '[]')); sys.exit(0 if os.environ['CHECK_LABEL'] in lbls else 1)"
+          }
+          LBL_DEV=$(has_label "branched-from-dev-acknowledged" && echo 1 || echo 0)
+          LBL_LARGE=$(has_label "large-pr-acknowledged" && echo 1 || echo 0)
+          LBL_BUNDLED=$(has_label "bundled-pr" && echo 1 || echo 0)
+
+          # --- Check 1: head branched off development ---
+          DEV_LEAK_FAIL=0
+          DEV_LEAK_REASON=""
+          if [ -n "$DEV_BASE" ] && [ "$DEV_BASE" != "$MAIN_BASE" ]; then
+            # Branch grew out of dev iff its main-merge-base is a strict ancestor of its dev-merge-base
+            if git merge-base --is-ancestor "$MAIN_BASE" "$DEV_BASE"; then
+              DEV_LEAK_FAIL=1
+              DEV_LEAK_REASON="head branch's merge-base with origin/development ($DEV_BASE @ $DEV_BASE_DATE) is newer than its merge-base with origin/main ($MAIN_BASE @ $MAIN_BASE_DATE) — branch was based on development, not main."
+            fi
+          fi
+
+          # --- Check 2: diff size ---
+          SIZE_FAIL=0
+          SIZE_REASON=""
+          if [ "$FILES_CHANGED" -gt "$MAX_FILES" ] || [ "$LINES_CHANGED" -gt "$MAX_LINES" ]; then
+            SIZE_FAIL=1
+            SIZE_REASON="diff is $FILES_CHANGED files / $LINES_CHANGED lines (limit: $MAX_FILES files / $MAX_LINES lines)."
+          fi
+
+          # --- Check 3: distinct ticket count ---
+          TICKET_FAIL=0
+          TICKET_REASON=""
+          if [ "$TICKET_COUNT" -gt "$MAX_TICKETS" ]; then
+            TICKET_FAIL=1
+            TICKET_REASON="$TICKET_COUNT distinct ASK-NNNN ticket IDs in commits (limit: $MAX_TICKETS). Found: $(echo $TICKETS | tr '\n' ' ')"
+          fi
+
+          # --- Apply override labels ---
+          BLOCKED=()
+          [ "$DEV_LEAK_FAIL" = "1" ] && [ "$LBL_DEV" = "0" ] && BLOCKED+=("dev-leak")
+          [ "$SIZE_FAIL" = "1" ] && [ "$LBL_LARGE" = "0" ] && BLOCKED+=("size")
+          [ "$TICKET_FAIL" = "1" ] && [ "$LBL_BUNDLED" = "0" ] && BLOCKED+=("tickets")
+
+          # --- Summary ---
+          {
+            echo "## PR Base Sanity"
+            echo ""
+            echo "| Check | Value | Limit | Status |"
+            echo "|---|---|---|---|"
+            echo "| Merge-base with main | \`$MAIN_BASE\` ($MAIN_BASE_DATE) | — | ℹ️ |"
+            echo "| Merge-base with development | \`${DEV_BASE:-—}\` ($DEV_BASE_DATE) | — | ℹ️ |"
+            if [ "$DEV_LEAK_FAIL" = "1" ]; then
+              if [ "$LBL_DEV" = "1" ]; then echo "| Branch base | branched off dev | branch off main | ⚠️ overridden by \`branched-from-dev-acknowledged\` |"
+              else echo "| Branch base | branched off dev | branch off main | ❌ BLOCKER — add label \`branched-from-dev-acknowledged\` to override |"; fi
+            else echo "| Branch base | branched off main | branch off main | ✅ |"; fi
+            if [ "$SIZE_FAIL" = "1" ]; then
+              if [ "$LBL_LARGE" = "1" ]; then echo "| Diff size | $FILES_CHANGED files / $LINES_CHANGED lines | $MAX_FILES files / $MAX_LINES lines | ⚠️ overridden by \`large-pr-acknowledged\` |"
+              else echo "| Diff size | $FILES_CHANGED files / $LINES_CHANGED lines | $MAX_FILES files / $MAX_LINES lines | ❌ BLOCKER — add label \`large-pr-acknowledged\` to override |"; fi
+            else echo "| Diff size | $FILES_CHANGED files / $LINES_CHANGED lines | $MAX_FILES files / $MAX_LINES lines | ✅ |"; fi
+            if [ "$TICKET_FAIL" = "1" ]; then
+              if [ "$LBL_BUNDLED" = "1" ]; then echo "| Distinct tickets | $TICKET_COUNT | $MAX_TICKETS | ⚠️ overridden by \`bundled-pr\` |"
+              else echo "| Distinct tickets | $TICKET_COUNT | $MAX_TICKETS | ❌ BLOCKER — add label \`bundled-pr\` to override |"; fi
+            else echo "| Distinct tickets | $TICKET_COUNT | $MAX_TICKETS | ✅ |"; fi
+            echo ""
+            if [ "$TICKET_COUNT" -gt 0 ]; then
+              echo "### Tickets referenced in commits"
+              echo "$TICKETS" | sed 's/^/- /'
+              echo ""
+            fi
+            if [ "${#BLOCKED[@]}" -gt 0 ]; then
+              echo "### Why this PR is blocked"
+              [ "$DEV_LEAK_FAIL" = "1" ] && [ "$LBL_DEV" = "0" ] && echo "- **dev-leak**: $DEV_LEAK_REASON"
+              [ "$SIZE_FAIL" = "1" ] && [ "$LBL_LARGE" = "0" ] && echo "- **size**: $SIZE_REASON"
+              [ "$TICKET_FAIL" = "1" ] && [ "$LBL_BUNDLED" = "0" ] && echo "- **tickets**: $TICKET_REASON"
+              echo ""
+              echo "Fix by rebasing onto \`origin/main\`, splitting the PR, or — if the violation is intentional — adding the override label shown above."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${#BLOCKED[@]}" -gt 0 ]; then
+            echo "::error::PR base sanity blocked: ${BLOCKED[*]}"
+            exit 1
+          fi
+          echo "PR base sanity passed."
