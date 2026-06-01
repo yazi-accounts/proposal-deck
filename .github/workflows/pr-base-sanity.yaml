@@ -98,8 +98,13 @@ jobs:
           DEV_LEAK_FAIL=0
           DEV_LEAK_REASON=""
           if [ -n "$DEV_BASE" ] && [ "$DEV_BASE" != "$MAIN_BASE" ]; then
-            # Branch grew out of dev iff its main-merge-base is a strict ancestor of its dev-merge-base
-            if git merge-base --is-ancestor "$MAIN_BASE" "$DEV_BASE"; then
+            # Branch grew out of dev iff its main-merge-base is a strict ancestor of its dev-merge-base.
+            # Gate: merging the feature branch into development for dev-environment testing (the mandated
+            # workflow) also makes the dev merge-base newer than main's, so the merge-base test alone
+            # false-positives on every clean PR. Only block when the diff ALSO exceeds a size/ticket
+            # threshold — i.e. it looks like the bulk dev-merge this check exists to stop (PR #1053).
+            if git merge-base --is-ancestor "$MAIN_BASE" "$DEV_BASE" \
+               && { [ "$FILES_CHANGED" -gt "$MAX_FILES" ] || [ "$LINES_CHANGED" -gt "$MAX_LINES" ] || [ "$TICKET_COUNT" -gt "$MAX_TICKETS" ]; }; then
               DEV_LEAK_FAIL=1
               DEV_LEAK_REASON="head branch's merge-base with origin/development ($DEV_BASE @ $DEV_BASE_DATE) is newer than its merge-base with origin/main ($MAIN_BASE @ $MAIN_BASE_DATE) — branch was based on development, not main."
             fi
