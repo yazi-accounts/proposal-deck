@@ -20,7 +20,7 @@ import Slide9 from "./slides/Slide9";
 import SlideReporting from "./slides/SlideReporting";
 import Slide11 from "./slides/Slide11";
 
-const slides: ReactNode[] = [
+export const defaultSlides: ReactNode[] = [
   <Slide1 />,                 // 1. Introduction (BAT co-branded)
   <SlideConversionGap />,     // 2. The Conversion Gap
   <SlideUseCasesFeedback />,  // 3. Customer Feedback Use Cases (BAT)
@@ -52,7 +52,7 @@ const slideVariants = {
   }),
 };
 
-const Presentation = () => {
+const Presentation = ({ slides = defaultSlides }: { slides?: ReactNode[] }) => {
   const { currentSlide, direction, goTo } = useSlideNavigation(slides.length);
 
   // Lock scrolling on the presentation page
